@@ -6,6 +6,7 @@ import {BOX_SELECTED, MyEvent, SUBMIT} from "./MyEvent";
 export default class Selector extends Container {
   constructor(resources) {
     super();
+
     this.table = new PIXI.Sprite(resources.table.texture);
     this.left = new Button(resources.left_normal.texture, resources.left_select.texture);
     this.right = new Button(resources.right_normal.texture, resources.right_select.texture);
@@ -32,6 +33,7 @@ export default class Selector extends Container {
     this.levelIndex = 0;
     this.totalOption = 0;
     this.boxs = [];
+    this.excepts = new Set();
 
     let self = this;
 
@@ -40,20 +42,67 @@ export default class Selector extends Container {
       if (self.currentIndex < 0) {
         self.currentIndex = 0;
       }
-      self.initOptions(self.currentIndex, self.levelIndex, self.totalOption);
-    })
+      self.createPage(self.currentIndex, self.levelIndex, self.totalOption);
+      this.refreshBox()
+      this.refreshLeftAndRight();
+    });
     this.right.on('pointerdown', () => {
       self.currentIndex += 4;
       if (self.currentIndex > self.totalOption - 1) {
         self.currentIndex = self.totalOption - 4;//倒数第四个
       }
-      self.initOptions(self.currentIndex, self.levelIndex, self.totalOption);
-
+      self.createPage(self.currentIndex, self.levelIndex, self.totalOption);
+      this.refreshBox()
+      this.refreshLeftAndRight();
     })
 
     this.submit.on('pointerdown', () => {
       MyEvent.emit(SUBMIT)
     })
+  }
+
+  addExcept(index) {
+    this.excepts.add(index);
+    this.refreshBox();
+  }
+
+  removeExcept(index) {
+    if (this.excepts.has(index)) {
+      this.excepts.delete(index);
+
+    }
+    this.refreshBox();
+  }
+
+  refreshLeftAndRight() {
+    if (this.currentIndex <= 0) {
+      this.left.visible = false;
+    } else {
+      this.left.visible = true;
+    }
+    if (this.totalOption - this.currentIndex <= 4) {
+      this.right.visible = false;
+    } else {
+      this.right.visible = true;
+    }
+  }
+
+  refreshBox() {
+    this.boxs.forEach((box) => {
+      if (this.excepts.has(box.index)) {
+        box.visible = false;
+      } else {
+        box.visible = true;
+      }
+    })
+  }
+
+  init(levelIndex, optionCount) {
+    this.createPage(0, levelIndex, optionCount)
+    this.excepts = new Set();
+    this.currentIndex = 0;
+    this.refreshLeftAndRight();
+    this.refreshBox();
   }
 
   /**
@@ -62,7 +111,7 @@ export default class Selector extends Container {
    * @param levelIndex
    * @param totalOption
    */
-  initOptions(currentIndex, levelIndex, totalOption) {
+  createPage(currentIndex, levelIndex, totalOption) {
     this.currentIndex = currentIndex;
     this.levelIndex = levelIndex;
     this.totalOption = totalOption;
@@ -79,9 +128,10 @@ export default class Selector extends Container {
       box.y = 900;
       box.scale.set(0.8, 0.8);
       box.interactive = true;
-      box.on('pointerdown', () => {
-        MyEvent.emit(BOX_SELECTED, [levelIndex, currentIndex + i])
-      })
+      box.index = currentIndex + i;
+      box.on('pointerdown', (e) => {
+        MyEvent.emit(BOX_SELECTED, [levelIndex, currentIndex + i, e.data.global])
+      });
       this.addChild(box);
       this.boxs.push(box);
     }

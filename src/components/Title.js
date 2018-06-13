@@ -7,7 +7,7 @@ export default class Title extends Container {
     super();
     this.levelInfo = levelInfo;
     this.titleContainer = new Container();
-    this.title = new PIXI.Sprite(resources.title_jump.texture);
+    this.title = new PIXI.Sprite(PIXI.Texture.fromImage('./static/title_text1.png'));
     this.addChild(this.title);
     this.pushhand = new PIXI.Sprite(resources.pushhand.texture);
     this.pushhand.interactive = true;
@@ -22,7 +22,7 @@ export default class Title extends Container {
     this.remaindTime = totalTime;
     this.timeTxt = new Text(this.remaindTime, new TextStyle({
       fontSize: 60,
-      fill: '0xE04B27'
+      fill: '0xfed055'
     }));
     this.addChild(this.timeTxt);
     this.timeTxt.x = 1750;
@@ -64,6 +64,11 @@ export default class Title extends Container {
     this.createDot();
   }
 
+  init(levelIndex) {
+    this.title.texture = PIXI.Texture.fromImage('./static/title_text' + levelIndex + '.png');
+  }
+
+
   resetTicker() {
     this.remaindTime = this.totalTime;
     this.stopTick = false;
@@ -83,7 +88,7 @@ export default class Title extends Container {
   }
 
   changeDotState(index, state) {
-    let dot = this.titleContainer.getChildByName('dot' + index)
+    let dot = this.titleContainer.getChildByName('dot' + index);
     dot.changeState(state);
   }
 }

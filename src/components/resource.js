@@ -23,7 +23,6 @@ export default function () {
       .add('train', animationRealPath('train'))
       .add('trainfinish', './static/animation/trainfinish/animate/powerup-ess.json')
       .add('background', './static/background.png')
-      .add('title_jump', './static/title_jump.png')
       .add('pushhand', './static/pushhand.png')
       .add('timesign', './static/timesign.png')
       .add('left_normal', './static/left_normal.png')

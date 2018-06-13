@@ -5,7 +5,7 @@ export default class Stem extends Container {
     super();
     this.textStyle = new TextStyle(new TextStyle({
       fontSize: 60,
-      fill: '0xE04B27'
+      fill: '0xf0b416'
     }))
     this.txt1 = new Text("", this.textStyle);
     this.txt2 = new Text("", this.textStyle);
