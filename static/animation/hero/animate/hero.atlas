@@ -1,0 +1,132 @@
+
+hero.png
+size: 1024,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+belt
+  rotate: false
+  xy: 60, 40
+  size: 46, 17
+  orig: 46, 17
+  offset: 0, 0
+  index: -1
+body
+  rotate: true
+  xy: 280, 108
+  size: 54, 92
+  orig: 54, 92
+  offset: 0, 0
+  index: -1
+brow
+  rotate: false
+  xy: 708, 41
+  size: 29, 16
+  orig: 29, 16
+  offset: 0, 0
+  index: -1
+close
+  rotate: true
+  xy: 2, 2
+  size: 36, 45
+  orig: 36, 45
+  offset: 0, 0
+  index: -1
+dust01
+  rotate: false
+  xy: 60, 89
+  size: 96, 73
+  orig: 96, 73
+  offset: 0, 0
+  index: -1
+dust02
+  rotate: false
+  xy: 907, 166
+  size: 86, 88
+  orig: 86, 88
+  offset: 0, 0
+  index: -1
+dust03
+  rotate: false
+  xy: 374, 110
+  size: 62, 52
+  orig: 62, 52
+  offset: 0, 0
+  index: -1
+eye
+  rotate: true
+  xy: 49, 2
+  size: 36, 45
+  orig: 36, 45
+  offset: 0, 0
+  index: -1
+hair
+  rotate: false
+  xy: 438, 41
+  size: 268, 213
+  orig: 268, 213
+  offset: 0, 0
+  index: -1
+handL
+  rotate: false
+  xy: 995, 158
+  size: 27, 96
+  orig: 27, 96
+  offset: 0, 0
+  index: -1
+handR
+  rotate: true
+  xy: 60, 59
+  size: 28, 96
+  orig: 28, 96
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 708, 59
+  size: 197, 195
+  orig: 197, 195
+  offset: 0, 0
+  index: -1
+legL
+  rotate: false
+  xy: 2, 40
+  size: 56, 122
+  orig: 56, 122
+  offset: 0, 0
+  index: -1
+legR
+  rotate: true
+  xy: 158, 113
+  size: 49, 120
+  orig: 49, 120
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 907, 71
+  size: 20, 11
+  orig: 20, 11
+  offset: 0, 0
+  index: -1
+pants
+  rotate: false
+  xy: 158, 86
+  size: 33, 25
+  orig: 33, 25
+  offset: 0, 0
+  index: -1
+shadow
+  rotate: false
+  xy: 2, 164
+  size: 434, 90
+  orig: 434, 90
+  offset: 0, 0
+  index: -1
+shield
+  rotate: false
+  xy: 907, 84
+  size: 81, 80
+  orig: 81, 80
+  offset: 0, 0
+  index: -1

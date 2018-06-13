@@ -1,0 +1,62 @@
+
+powerup-ess.png
+size: 1024,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+box
+  rotate: false
+  xy: 2, 53
+  size: 371, 198
+  orig: 371, 198
+  offset: 0, 0
+  index: -1
+shadow
+  rotate: false
+  xy: 2, 2
+  size: 49, 49
+  orig: 49, 49
+  offset: 0, 0
+  index: -1
+star
+  rotate: false
+  xy: 854, 151
+  size: 100, 100
+  orig: 100, 100
+  offset: 0, 0
+  index: -1
+text1
+  rotate: false
+  xy: 622, 15
+  size: 229, 77
+  orig: 229, 77
+  offset: 0, 0
+  index: -1
+text2
+  rotate: false
+  xy: 622, 173
+  size: 230, 78
+  orig: 230, 78
+  offset: 0, 0
+  index: -1
+text3
+  rotate: false
+  xy: 622, 94
+  size: 229, 77
+  orig: 229, 77
+  offset: 0, 0
+  index: -1
+top
+  rotate: true
+  xy: 956, 51
+  size: 200, 57
+  orig: 200, 57
+  offset: 0, 0
+  index: -1
+wing
+  rotate: false
+  xy: 375, 11
+  size: 245, 240
+  orig: 245, 240
+  offset: 0, 0
+  index: -1

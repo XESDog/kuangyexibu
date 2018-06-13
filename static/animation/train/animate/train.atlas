@@ -1,0 +1,173 @@
+
+train.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+browL
+  rotate: false
+  xy: 687, 244
+  size: 34, 12
+  orig: 34, 12
+  offset: 0, 0
+  index: -1
+browR
+  rotate: false
+  xy: 2, 19
+  size: 27, 11
+  orig: 27, 11
+  offset: 0, 0
+  index: -1
+cloud
+  rotate: true
+  xy: 972, 959
+  size: 63, 50
+  orig: 63, 50
+  offset: 0, 0
+  index: -1
+eye1
+  rotate: false
+  xy: 113, 61
+  size: 43, 44
+  orig: 43, 44
+  offset: 0, 0
+  index: -1
+eye2
+  rotate: true
+  xy: 949, 900
+  size: 31, 12
+  orig: 31, 12
+  offset: 0, 0
+  index: -1
+faceL
+  rotate: false
+  xy: 972, 938
+  size: 31, 19
+  orig: 31, 19
+  offset: 0, 0
+  index: -1
+faceR
+  rotate: false
+  xy: 883, 848
+  size: 30, 16
+  orig: 30, 16
+  offset: 0, 0
+  index: -1
+hair
+  rotate: true
+  xy: 2, 61
+  size: 44, 109
+  orig: 44, 109
+  offset: 0, 0
+  index: -1
+hand
+  rotate: false
+  xy: 2, 32
+  size: 91, 27
+  orig: 91, 27
+  offset: 0, 0
+  index: -1
+lily
+  rotate: false
+  xy: 445, 111
+  size: 150, 145
+  orig: 150, 145
+  offset: 0, 0
+  index: -1
+mouth1
+  rotate: false
+  xy: 597, 162
+  size: 13, 7
+  orig: 13, 7
+  offset: 0, 0
+  index: -1
+mouth2
+  rotate: false
+  xy: 597, 212
+  size: 88, 44
+  orig: 88, 44
+  offset: 0, 0
+  index: -1
+nose
+  rotate: false
+  xy: 2, 2
+  size: 13, 15
+  orig: 13, 15
+  offset: 0, 0
+  index: -1
+train_lily
+  rotate: false
+  xy: 2, 641
+  size: 879, 381
+  orig: 879, 381
+  offset: 0, 0
+  index: -1
+train_normal1
+  rotate: false
+  xy: 2, 258
+  size: 879, 381
+  orig: 879, 381
+  offset: 0, 0
+  index: -1
+wheel_big
+  rotate: false
+  xy: 883, 933
+  size: 87, 89
+  orig: 87, 89
+  offset: 0, 0
+  index: -1
+wheel_inside
+  rotate: false
+  xy: 597, 171
+  size: 39, 39
+  orig: 39, 39
+  offset: 0, 0
+  index: -1
+wheel_line
+  rotate: false
+  xy: 95, 46
+  size: 13, 13
+  orig: 13, 13
+  offset: 0, 0
+  index: -1
+wheel_point
+  rotate: false
+  xy: 158, 92
+  size: 13, 13
+  orig: 13, 13
+  offset: 0, 0
+  index: -1
+wheel_small
+  rotate: false
+  xy: 883, 866
+  size: 64, 65
+  orig: 64, 65
+  offset: 0, 0
+  index: -1
+window
+  rotate: false
+  xy: 2, 107
+  size: 441, 149
+  orig: 441, 149
+  offset: 0, 0
+  index: -1
+
+train2.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+train_first
+  rotate: false
+  xy: 2, 2
+  size: 652, 364
+  orig: 652, 364
+  offset: 0, 0
+  index: -1
+train_normal2
+  rotate: false
+  xy: 2, 368
+  size: 879, 381
+  orig: 879, 381
+  offset: 0, 0
+  index: -1
