@@ -7,4 +7,5 @@ export const TIME_OVER = Symbol();
 export const CLICK = Symbol();
 export const ADD_EXCEPT = Symbol();
 export const REMOVE_EXCEPT = Symbol();
+export const START_GAME = Symbol();
 

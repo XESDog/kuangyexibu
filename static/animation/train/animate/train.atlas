@@ -160,8 +160,8 @@ repeat: none
 train_first
   rotate: false
   xy: 2, 2
-  size: 652, 364
-  orig: 652, 364
+  size: 656, 364
+  orig: 656, 364
   offset: 0, 0
   index: -1
 train_normal2

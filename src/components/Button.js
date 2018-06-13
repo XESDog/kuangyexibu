@@ -4,7 +4,7 @@ import {CLICK, MyEvent} from "./MyEvent";
 export default class Button extends Sprite {
   constructor(normal, select) {
     super();
-    this.cursor = 'pointer';
+    // this.cursor = 'pointer';
     this.normal = normal;
     this.select = select;
     this.texture = this.normal;

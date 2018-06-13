@@ -1,7 +1,5 @@
 <template>
   <div>
-    <audio id="bgSound" loop="loop"></audio>
-    <audio id="effectSound"></audio>
   </div>
 
 </template>
@@ -12,7 +10,17 @@
   import {TimelineMax, TweenLite} from 'gsap'
   import Stem from "./Stem";
   import MatterWorld from "./MatterWorld";
-  import {ADD_EXCEPT, BOX_SELECTED, CLICK, MyEvent, REMOVE_EXCEPT, SUBMIT, TIME_OVER} from './MyEvent'
+  import {
+    ADD_EXCEPT,
+    BOX_SELECTED,
+    CLICK,
+    MyEvent,
+    REMOVE_EXCEPT,
+    RESET,
+    START_GAME,
+    SUBMIT,
+    TIME_OVER
+  } from './MyEvent'
   import Box from "./Box";
 
   const pixelRatio = window.devicePixelRatio || 1;
@@ -40,17 +48,6 @@
       }
     },
     methods: {
-      playEffect(src) {
-        this.effectSound.src = src;
-        this.effectSound.play();
-      },
-      playBg(src) {
-        if (!this.beginBgSound) {
-          this.bgSound.src = src;
-          this.bgSound.play();
-          this.beginBgSound = true;
-        }
-      },
       createApp() {
         return new Application({
           width: 1920,
@@ -76,13 +73,17 @@
         const stemContainer = new Container();
         const finishContainer = new Container();
         const boxContainer = new Container();
+        const heroContainer = new Container();
+        const overContainer = new Container();
 
         stage.addChild(uiContainer);
         stage.addChild(matterContainer);
         stage.addChild(boxContainer);
         stage.addChild(stemContainer);
+        stage.addChild(heroContainer);
         stage.addChild(finishContainer);
         stage.addChild(dragContainer);
+        stage.addChild(overContainer);
         stage.addChild(mouseContainer);
 
         return {
@@ -92,7 +93,9 @@
           stemContainer,
           finishContainer,
           dragContainer,
-          mouseContainer
+          mouseContainer,
+          heroContainer,
+          overContainer
         };
       },
       heroState(hero, state = 'stay', loop = true) {
@@ -134,7 +137,6 @@
         let dragValue = null;
         target.on('pointerdown', (e) => {
 
-          // self.playBg('./static/sound/train_ground.mp3');
           if (!dragStart) {
             let newP = e.data.getLocalPosition(target);
             let body = matter.queryPoint(newP.x, newP.y);
@@ -153,7 +155,6 @@
               dragValue = body[0].render.userInfo.concat();
               dragContainer.addChild(dragObj);
 
-              // MyEvent.emit(REMOVE_EXCEPT, dragValue[1]);
             }
           }
         });
@@ -182,7 +183,6 @@
             if (rect) {
               matter.addBox(dragValue[0], dragValue[1], index, newP.x, newP.y);
               this.userAnswers[index].push(dragValue[1]);
-              console.log(this.userAnswers)
             } else {
               if (dragValue) {
                 MyEvent.emit(REMOVE_EXCEPT, dragValue[1]);
@@ -229,7 +229,9 @@
         stemContainer,
         finishContainer,
         dragContainer,
-        mouseContainer
+        mouseContainer,
+        heroContainer,
+        overContainer
       } = this.layout(stage);
 
       let mask = this.createMask();
@@ -241,11 +243,40 @@
       app.view.style.height = '10.8rem';
       self.$el.appendChild(app.view);
 
+      stage.interactive=true;
 
       resource()
-      //开场动画
+        .then(value => {
+
+          let mouseCursor;
+          mouseCursor = new Sprite(value.hand1);
+          mouseContainer.addChild(mouseCursor);
+          stage.on('pointermove', (e) => {
+            let newP = e.data.getLocalPosition(stage);
+            mouseCursor.x = newP.x;
+            mouseCursor.y = newP.y;
+          });
+          stage.on('pointerdown', () => {
+            mouseCursor.texture = value.hand2
+          });
+          stage.on('pointerup', () => {
+            mouseCursor.texture = value.hand1;
+            value.click.play();
+          });
+
+          return new Promise(resolve => {
+            uiContainer.addChild(value.start);
+            MyEvent.on(START_GAME, () => {
+              resolve(value);
+            })
+          })
+
+        })
+        //开场动画
         .then(value => {
           return new Promise(resolve => {
+            uiContainer.removeChild(value.start);
+            value.lily_help.play();
             uiContainer.addChild(value.background);
             uiContainer.addChild(value.startscreen);
             uiContainer.interactive = true;
@@ -264,7 +295,7 @@
         //遮罩动画
         .then(value => {
           return new Promise(resolve => {
-
+            value.lily_ya.play();
             uiContainer.addChild(mask);
             //播放圆圈动画
             value.startscreen.mask = mask;
@@ -276,8 +307,8 @@
                 value.startscreen.parent.removeChild(value.startscreen);
 
                 uiContainer.addChild(value.train);
-                uiContainer.addChild(value.hero);
                 uiContainer.addChild(value.title);
+                heroContainer.addChild(value.hero);
 
                 uiContainer.addChild(mask);
                 mask.clear();
@@ -289,6 +320,8 @@
         })
         //火车开入
         .then(value => {
+          value.train_ground.loop = true;
+          value.train_ground.play();
           return new Promise(resolve => {
             //方块遮罩
             mask.beginFill(0x000000);
@@ -310,12 +343,13 @@
             value.hero.y = 1000;
             this.heroState(value.hero, 'run_slow');
 
-            self.playEffect('./static/sound/train_pupu.mp3');
+            value.train_pupu.play();
             value.train.gotoTrain(value.levelInfo.questions.length - 1, 3)
               .then(() => {
                 uiContainer.addChild(value.selector);
-                this.initSelector(value.selector, value.levelInfo, this.levelIndex, true);
+                // this.initSelector(value.selector, value.levelInfo, this.levelIndex, true);
                 this.showStem(stem, value.levelInfo, this.levelIndex);
+                value.title.loopSway();
 
                 matter = new MatterWorld(app.renderer);
                 matterContainer.addChild(matter);
@@ -325,26 +359,13 @@
           })
         })
         .then(value => {
-          let mouseCursor;
-          mouseCursor = new Sprite(value.hand1);
-          mouseContainer.addChild(mouseCursor);
-          uiContainer.on('pointermove', (e) => {
-            let newP = e.data.getLocalPosition(mouseContainer);
-            mouseCursor.x = newP.x;
-            mouseCursor.y = newP.y;
-          });
-          uiContainer.on('pointerdown', () => {
-            mouseCursor.texture = value.hand2
-          });
-          uiContainer.on('pointerup', () => {
-            mouseCursor.texture = value.hand1
-          });
-
           this.createDrag(uiContainer, dragContainer, matter);
 
-          this.levelIndex = 0;
+          this.levelIndex = -1;
           this.totalLevel = value.levelInfo.questions.length;
-          this.answers = value.levelInfo.questions[this.levelIndex].answers;
+          this.answers = null;
+
+          passLevel();
 
 
           /**
@@ -383,6 +404,13 @@
             }
             passLevel();
           });
+          MyEvent.on(RESET, () => {
+            const question = value.levelInfo.questions[self.levelIndex];
+            const optionCount = question.optionCount;
+            self.userAnswers = [[], [], []];
+            value.selector.init(self.levelIndex, optionCount)
+            matter.removeAllBox();
+          })
           MyEvent.on(ADD_EXCEPT, (index) => {
             value.selector.addExcept(index)
           });
@@ -399,7 +427,7 @@
           });
 
           MyEvent.on(CLICK, () => {
-            self.playEffect('./static/sound/click.mp3');
+            value.click.play();
           });
 
           function passLevel() {
@@ -408,10 +436,11 @@
             if (self.levelIndex < self.totalLevel) {
               nextLevel();
             } else {
-              value.background.speed = 20;
-              self.heroState(value.hero, 'run_fast')
-              stem.visible = false;
               let duration = 2;
+              value.background.speed = 20;
+              self.heroState(value.hero, 'run_fast');
+              stem.visible = false;
+              value.title.stopTicker();
               TweenLite.to(value.background, duration, {speed: 0});
               TweenLite.to(value.train, duration, {
                 x: -800, onComplete: () => {
@@ -420,9 +449,13 @@
               });
               TweenLite.to(value.selector, duration, {
                 y: 220, onComplete: () => {
-                  uiContainer.addChild(value.pass);
+
+                  overContainer.addChild(value.pass);
                   value.pass.alpha = 0.2;
+                  value.pass.interactive = true;
+
                   TweenLite.to(value.pass, 1, {alpha: 1});
+
                 }
               });
             }
@@ -432,7 +465,12 @@
             self.answers = value.levelInfo.questions[self.levelIndex].answers;
             self.userAnswers = [[], [], []];
             value.background.speed = 20;
-            self.heroState(value.hero, 'run_fast')
+            if (self.levelIndex === 0) {
+              // self.heroState(value.hero, 'run_slow');
+            } else {
+              self.heroState(value.hero, 'run_fast');
+            }
+
             stem.visible = false;
             value.train.gotoTrain(self.totalLevel - self.levelIndex - 1, 2)
               .then(() => {
@@ -440,11 +478,11 @@
                 self.heroState(value.hero, 'run_slow');
                 self.showStem(stem, value.levelInfo, self.levelIndex);
                 self.showMatter(matter);
-                value.title.init(self.levelIndex)
               });
 
-            self.initSelector(value.selector, value.levelInfo, self.levelIndex, false);
+            self.initSelector(value.selector, value.levelInfo, self.levelIndex, self.levelIndex === 0);
             value.title.resetTicker();
+            value.title.init(self.levelIndex);
           }
 
 
@@ -453,7 +491,7 @@
            * @param str text1答对了 text2答错了 text3时间到
            */
           function showFinish(str) {
-            self.playEffect('./static/sound/victory.mp3');
+            value.victory.play();
             finishContainer.addChild(value.trainfinish);
             value.trainfinish.state.setAnimation(0, 'bounce').loop = true;
             value.trainfinish.x = 1920 >> 1;

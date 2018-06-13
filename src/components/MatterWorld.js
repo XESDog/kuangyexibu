@@ -35,7 +35,7 @@ export default class MatterWorld extends Container {
       engine: this.engine,
       renderer: renderer,
       options: {
-        wireframes: true
+        // wireframes: true,
       }
     });
 
@@ -83,23 +83,23 @@ export default class MatterWorld extends Container {
 
   }
 
-  stop() {
-    Render.stop(this.render);
-    Runner.stop(this.runner);
-  }
+  /* stop() {
+     Render.stop(this.render);
+     Runner.stop(this.runner);
+   }
 
-  run() {
-    Runner.run(this.runner);
-    Render.run(this.render);
-  }
+   run() {
+     Runner.run(this.runner);
+     Render.run(this.render);
+   }*/
 
   queryPoint(x, y) {
     return Matter.Query.point(Matter.Composite.allBodies(this.world), Matter.Vector.create(x, y));
   }
 
   removeBox(body) {
-    console.log(body)
     World.remove(this.world, body);
+    // MyEvent.emit(REMOVE_EXCEPT, body.render.userInfo[1]);
   }
 
   removeAllBox() {

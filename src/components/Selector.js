@@ -1,7 +1,7 @@
 import {Container} from 'pixi.js';
 import Button from "./Button";
 import Box from "./Box";
-import {BOX_SELECTED, MyEvent, SUBMIT} from "./MyEvent";
+import {BOX_SELECTED, MyEvent, RESET, SUBMIT} from "./MyEvent";
 
 export default class Selector extends Container {
   constructor(resources) {
@@ -27,7 +27,7 @@ export default class Selector extends Container {
     this.reset.x = 1173;
     this.reset.y = 980;
 
-    this.x = 200;
+    this.x = 100;
 
     this.currentIndex = 0;//当前指针位置
     this.levelIndex = 0;
@@ -58,6 +58,9 @@ export default class Selector extends Container {
 
     this.submit.on('pointerdown', () => {
       MyEvent.emit(SUBMIT)
+    })
+    this.reset.on('pointerdown',()=>{
+      MyEvent.emit(RESET);
     })
   }
 
