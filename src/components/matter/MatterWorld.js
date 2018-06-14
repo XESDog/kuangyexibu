@@ -1,5 +1,5 @@
 import {Container} from 'pixi.js'
-import Box from "./Box";
+import Box from "../ui/Box";
 
 const Matter = require('matter-js');
 const RenderPixi = require('./RenderPixi.js');
@@ -10,7 +10,6 @@ const Engine = Matter.Engine,
   Composites = Matter.Composites,
   Common = Matter.Common,
   MouseConstraint = Matter.MouseConstraint,
-  Mouse = require('./Mouse'),
   World = Matter.World,
   Bodies = Matter.Bodies;
 
@@ -46,23 +45,23 @@ export default class MatterWorld extends Container {
     Render.run(this.render);
 
     // add mouse control
-    this.mouse = Mouse.create(renderer.view);
-    this.mouseConstraint = MouseConstraint.create(this.engine, {
-      mouse: this.mouse,
-      constraint: {
-        stiffness: 0.2,
-        render: {
-          visible: false
-        }
-      }
-    });
+    /* this.mouse = Mouse.create(renderer.view);
+     this.mouseConstraint = MouseConstraint.create(this.engine, {
+       mouse: this.mouse,
+       constraint: {
+         stiffness: 0.2,
+         render: {
+           visible: false
+         }
+       }
+     });*/
 
-    World.add(this.world, this.mouseConstraint);
+    // World.add(this.world, this.mouseConstraint);
 
     this.createArea();
 
     // keep the mouse in sync with rendering
-    this.render.mouse = this.mouse;
+    // this.render.mouse = this.mouse;
   }
 
   createArea() {

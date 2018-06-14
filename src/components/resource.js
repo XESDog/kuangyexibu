@@ -1,9 +1,9 @@
-import BackGround from './BackGround';
-import Train from './Train';
-import Title from "./Title";
-import Selector from "./Selector";
-import Pass from "./Pass";
-import Start from "./Start";
+import BackGround from './ui/BackGround';
+import Train from './ui/Train';
+import Title from "./ui/Title";
+import Selector from "./ui/Selector";
+import Pass from "./ui/Pass";
+import Start from "./ui/Start";
 
 const PIXI = require('pixi.js')
 const PIXI_SPINE = require('pixi-spine');
@@ -26,10 +26,6 @@ export default function () {
       .add('background', './static/background.png')
       .add('pushhand', './static/pushhand.png')
       .add('timesign', './static/timesign.png')
-      .add('left_normal', './static/left_normal.png')
-      .add('left_select', './static/left_select.png')
-      .add('right_select', './static/right_select.png')
-      .add('right_normal', './static/right_normal.png')
       .add('submit_normal', './static/submit_normal.png')
       .add('submit_select', './static/submit_select.png')
       .add('reset_normal', './static/reset_normal.png')

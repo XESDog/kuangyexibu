@@ -1,5 +1,5 @@
 import {Sprite} from 'pixi.js';
-import {CLICK, MyEvent} from "./MyEvent";
+import {CLICK, MyEvent} from "../MyEvent";
 
 export default class Button extends Sprite {
   constructor(normal, select) {

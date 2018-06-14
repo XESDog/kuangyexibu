@@ -1,6 +1,6 @@
 import {Container, Graphics, Text, TextStyle} from 'pixi.js';
 import {TimelineMax, TweenLite} from 'gsap';
-import {MyEvent, TIME_OVER} from "./MyEvent";
+import {MyEvent, TIME_OVER} from "../MyEvent";
 
 export default class Title extends Container {
   constructor(resources, totalTime, levelInfo) {

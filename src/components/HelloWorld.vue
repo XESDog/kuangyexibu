@@ -8,23 +8,12 @@
 
   import {Application, Container, Graphics, Rectangle, Sprite} from 'pixi.js';
   import {TimelineMax, TweenLite} from 'gsap'
-  import Stem from "./Stem";
-  import MatterWorld from "./MatterWorld";
-  import {
-    ADD_EXCEPT,
-    BOX_SELECTED,
-    CLICK,
-    MyEvent,
-    REMOVE_EXCEPT,
-    RESET,
-    START_GAME,
-    SUBMIT,
-    TIME_OVER
-  } from './MyEvent'
-  import Box from "./Box";
+  import Stem from "./ui/Stem";
+  import MatterWorld from "./matter/MatterWorld";
+  import {BOX_SELECTED, CLICK, MyEvent, REMOVE_EXCEPT, RESET, START_GAME, SUBMIT, TIME_OVER} from './MyEvent'
+  import Box from "./ui/Box";
+  import DragBoxEvent from "./type/DragBoxEvent";
 
-  const pixelRatio = window.devicePixelRatio || 1;
-  const RenderPixi = require('./RenderPixi.js');
   const resource = require('./resource').default;
 
 
@@ -131,72 +120,6 @@
         matter.visible = false;
         matter.removeAllBox();
       },
-      createDrag(target, dragContainer, matter) {
-        let dragObj = null;
-        let dragStart = false;
-        let dragValue = null;
-        target.on('pointerdown', (e) => {
-
-          if (!dragStart) {
-            let newP = e.data.getLocalPosition(target);
-            let body = matter.queryPoint(newP.x, newP.y);
-            if (body && body.length > 0 && body[0].render) {
-              dragStart = true;
-              let [level, boxIndex, frameIndex] = body[0].render.userInfo;
-              let i = this.userAnswers[frameIndex].indexOf(boxIndex);
-              if (i !== -1) {
-                this.userAnswers[frameIndex].splice(i, 1);
-              }
-
-              matter.removeBox(body[0]);
-              dragObj = new Box(body[0].render.userInfo[0], body[0].render.userInfo[1], 0.5, 0.5);
-              dragObj.x = newP.x;
-              dragObj.y = newP.y;
-              dragValue = body[0].render.userInfo.concat();
-              dragContainer.addChild(dragObj);
-
-            }
-          }
-        });
-        MyEvent.on(BOX_SELECTED, (data) => {
-          dragStart = true;
-          dragObj = new Box(data[0], data[1], 0.5, 0.5);
-          dragObj.x = data[2].x;
-          dragObj.y = data[2].y;
-          dragValue = data.concat();
-          dragContainer.addChild(dragObj);
-          MyEvent.emit(ADD_EXCEPT, data[1]);
-
-        });
-        target.on('pointermove', (e) => {
-          if (dragStart && dragObj) {
-            let newP = e.data.getLocalPosition(target);
-            dragObj.x = newP.x;
-            dragObj.y = newP.y;
-          }
-        });
-        target.on('pointerup', (e) => {
-
-          if (dragStart && dragObj) {
-            let newP = e.data.getLocalPosition(target);
-            let {result: rect, index} = this.dragTargetRectangle(newP.x, newP.y);
-            if (rect) {
-              matter.addBox(dragValue[0], dragValue[1], index, newP.x, newP.y);
-              this.userAnswers[index].push(dragValue[1]);
-            } else {
-              if (dragValue) {
-                MyEvent.emit(REMOVE_EXCEPT, dragValue[1]);
-              }
-            }
-          }
-
-          dragStart = false;
-          dragObj = null;
-          while (dragContainer.children[0]) {
-            dragContainer.children[0].destroy();
-          }
-        })
-      },
       dragTargetRectangle(x, y) {
         let result = null;
         let index = null;
@@ -243,7 +166,7 @@
       app.view.style.height = '10.8rem';
       self.$el.appendChild(app.view);
 
-      stage.interactive=true;
+      stage.interactive = true;
 
       resource()
         .then(value => {
@@ -359,14 +282,97 @@
           })
         })
         .then(value => {
-          this.createDrag(uiContainer, dragContainer, matter);
-
           this.levelIndex = -1;
           this.totalLevel = value.levelInfo.questions.length;
           this.answers = null;
 
           passLevel();
+          createDrag(uiContainer, dragContainer, matter);
 
+          function createDrag(target, dragContainer, matter) {
+            let dragObj = null;
+            let dragStart = false;
+            let dragBoxEvent = null;
+            target.on('pointerdown', (e) => {
+
+              if (!dragStart) {
+                let newP = e.data.getLocalPosition(target);
+                let body = matter.queryPoint(newP.x, newP.y);
+                if (body && body.length > 0 && body[0].render) {
+                  dragStart = true;
+                  let [level, boxIndex, frameIndex] = body[0].render.userInfo;
+                  let i = self.userAnswers[frameIndex].indexOf(boxIndex);
+
+                  if (i !== -1) {
+                    self.userAnswers[frameIndex].splice(i, 1);
+                  }
+
+                  matter.removeBox(body[0]);
+                  dragObj = new Box(body[0].render.userInfo[0], body[0].render.userInfo[1], 0.5, 0.5);
+                  dragObj.x = newP.x;
+                  dragObj.y = newP.y;
+                  dragBoxEvent = new DragBoxEvent();
+                  dragBoxEvent.boxIndex = boxIndex;
+                  dragBoxEvent.boxPosition = newP;
+                  dragBoxEvent.from = DragBoxEvent.FROM_TRAIN;
+                  dragContainer.addChild(dragObj);
+
+                }
+              }
+            });
+            //从selector中选择箱子
+            MyEvent.on(BOX_SELECTED, (boxEvent) => {
+              dragStart = true;
+              dragObj = new Box(self.levelIndex, boxEvent.boxIndex, 0.5, 0.5);
+              dragObj.x = boxEvent.boxPosition.x;
+              dragObj.y = boxEvent.boxPosition.y;
+
+              dragBoxEvent = boxEvent;
+
+              dragContainer.addChild(dragObj);
+              value.selector.liftUp(boxEvent.boxIndex);
+
+            });
+            target.on('pointermove', (e) => {
+              if (dragStart && dragObj) {
+                let newP = e.data.getLocalPosition(target);
+                dragObj.x = newP.x;
+                dragObj.y = newP.y;
+              }
+            });
+            target.on('pointerup', (e) => {
+
+              if (dragStart && dragObj) {
+                let newP = e.data.getLocalPosition(target);
+                let {result: rect, index} = self.dragTargetRectangle(newP.x, newP.y);
+                //箱子放下到火车
+                if (rect) {
+                  matter.addBox(self.levelIndex, dragBoxEvent.boxIndex, index, newP.x, newP.y);
+                  self.userAnswers[index].push(dragBoxEvent.boxIndex);
+                  value.selector.remove(dragBoxEvent.boxIndex);
+                  value.selector.liftUpIndex = -1;
+                }
+                //箱子放下到火车外
+                else {
+                  //从selector拿箱子
+                  if (dragBoxEvent.from === 0) {
+                    value.selector.liftUpIndex = -1;
+                    value.selector._update();
+                  }
+                  //从火车上拿箱子
+                  else if (dragBoxEvent.from === 1) {
+                    value.selector.add(dragBoxEvent.boxIndex);
+                  }
+                }
+              }
+
+              dragStart = false;
+              dragObj = null;
+              while (dragContainer.children[0]) {
+                dragContainer.children[0].destroy();
+              }
+            })
+          }
 
           /**
            * 判断正误
@@ -410,9 +416,6 @@
             self.userAnswers = [[], [], []];
             value.selector.init(self.levelIndex, optionCount)
             matter.removeAllBox();
-          })
-          MyEvent.on(ADD_EXCEPT, (index) => {
-            value.selector.addExcept(index)
           });
           MyEvent.on(REMOVE_EXCEPT, (index) => {
             value.selector.removeExcept(index)

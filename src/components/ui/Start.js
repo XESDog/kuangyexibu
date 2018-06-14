@@ -1,6 +1,6 @@
 import {Container} from 'pixi.js';
 import Button from "./Button";
-import {MyEvent, START_GAME} from "./MyEvent";
+import {MyEvent, START_GAME} from "../MyEvent";
 
 export default class Start extends Container {
   constructor(resources) {
