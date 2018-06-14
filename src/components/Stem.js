@@ -20,7 +20,7 @@ export default class Stem extends Container {
     this.txt3.anchor.set(0.5, 0.5);
 
     this.txt1.x = 280 + 100;
-    this.txt2.x = 800 + 100;
+    this.txt2.x = 820 + 100;
     this.txt3.x = 1360 + 100;
     this.txt1.y = 250;
     this.txt2.y = 250;
