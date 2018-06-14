@@ -1,8 +1,9 @@
-import {Container} from 'pixi.js';
+import {Container, Graphics,Sprite,Texture} from 'pixi.js';
 import Button from "./Button";
 import Box from "./Box";
 import {BOX_SELECTED, MyEvent, RESET, SUBMIT} from "../MyEvent";
 import DragBoxEvent from "../type/DragBoxEvent";
+import {TweenLite} from 'gsap';
 
 export default class Selector extends Container {
   constructor(resources) {
@@ -11,9 +12,23 @@ export default class Selector extends Container {
     this.table = new PIXI.Sprite(resources.table.texture);
     this.submit = new Button(resources.submit_normal.texture, resources.submit_select.texture)
     this.reset = new Button(resources.reset_normal.texture, resources.reset_select.texture)
+    this.boxContainer = new Container();
+    this.maskMc = new Graphics();
+
+
     this.addChild(this.table);
     this.addChild(this.submit);
     this.addChild(this.reset);
+    this.addChild(this.boxContainer);
+
+    this.maskMc.beginFill(0x000000);
+    this.maskMc.drawRect(50, 0, this.table.width-100, this.table.height);
+    this.maskMc.endFill();
+    this.maskMc.y = 865;
+    this.addChild(this.maskMc);
+
+    this.boxContainer.mask = this.maskMc;
+
     this.table.y = 865;
     this.submit.x = 1173;
     this.submit.y = 880;
@@ -27,6 +42,8 @@ export default class Selector extends Container {
     this.liftUpIndex = -1;//当前抬起
     this.boxs = [];//所有box显示对象，一次创建
     this.queue = [];
+
+    this._createEvent();
 
   }
 
@@ -43,7 +60,6 @@ export default class Selector extends Container {
     this.boxs = [];//所有box显示对象，一次创建
     this.queue = [];//队列
 
-    this._createEvent();
     this._createBoxs();
     this._initQueue();
     this._update();
@@ -68,6 +84,7 @@ export default class Selector extends Container {
     for (let i = 0; i < this.optionCount; i++) {
       let box = new Box(this.levelIndex, i);
       box.y = 900;
+      box.x = 130 + 250 * i;
       box.scale.set(0.8, 0.8);
       box.interactive = true;
       box.index = i;
@@ -83,7 +100,6 @@ export default class Selector extends Container {
         dragBoxEvent.boxPosition = e.data.global;
         dragBoxEvent.from = DragBoxEvent.FROM_SELECTOR;
         MyEvent.emit(BOX_SELECTED, dragBoxEvent);
-        console.log(box.index);
       });
       this.boxs.push(box);
     }
@@ -91,21 +107,69 @@ export default class Selector extends Container {
 
   liftUp(index) {
     this.liftUpIndex = index;
-    this._update();
+    this._update3();
   }
 
   remove(index) {
     let i = this.queue.indexOf(index);
     if (i !== -1) this.queue.splice(i, 1);
-    console.log(this.queue);
     this._update();
   }
 
   add(index) {
-    let i = this.queue.indexOf(index)
+    let i = this.queue.indexOf(index);
     if (i === -1) this.queue.unshift(index);
-    console.log(this.queue);
-    this._update();
+    this._update2();
+  }
+
+  _update3() {
+
+    let len = this.queue.length >= 4 ? 4 : this.queue.length;
+    for (let i = 0; i < len; i++) {
+      let index = this.queue[i];
+      let box = this.boxs[index];
+      if (this.liftUpIndex === index) {
+        box.visible = false;
+      } else {
+        box.visible = true;
+      }
+    }
+
+  }
+
+  _update2() {
+    this.boxs.forEach(value => {
+      value.visible = false;
+      if (value.parent) value.parent.removeChild(value);
+    });
+    let len = this.queue.length >= 4 ? 4 : this.queue.length;
+    for (let i = 0; i < len; i++) {
+      let index = this.queue[i];
+      let box = this.boxs[index];
+      box.interaction = false;
+
+      if (i === 0) {
+        box.alpha = 0.2;
+        box.x = 130;
+        TweenLite.to(box, 1, {
+          alpha: 1, onComplete: () => {
+            box.interaction = true;
+          }
+        })
+      } else {
+        TweenLite.to(box, 0.5, {
+          x: 130 + 250 * i, onComplete: () => {
+            box.interaction = true;
+          }
+        });
+      }
+      if (this.liftUpIndex === index) {
+        box.visible = false;
+      } else {
+        box.visible = true;
+      }
+      this.boxContainer.addChild(box)
+    }
   }
 
   _update() {
@@ -117,13 +181,14 @@ export default class Selector extends Container {
     for (let i = 0; i < len; i++) {
       let index = this.queue[i];
       let box = this.boxs[index];
-      box.x = 130 + 250 * i;
-      if (this.liftUpIndex === index) {
-        box.visible = false;
-      } else {
-        box.visible = true;
-      }
-      this.addChild(box)
+      box.interaction = false;
+      TweenLite.to(box, 0.5, {
+        x: 130 + 250 * i, onComplete: () => {
+          box.interaction = true;
+        }
+      });
+      box.visible = true;
+      this.boxContainer.addChild(box)
     }
   }
 }

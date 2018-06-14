@@ -28,6 +28,7 @@
         levelIndex: 0,
         totalLevel: 0,
         userAnswers: [[], [], []],
+        isRights: [],
         answers: null,
         rectangles: [new Rectangle(192, 324, 500, 420),
           new Rectangle(721, 324, 500, 420),
@@ -56,19 +57,19 @@
       },
       layout(stage) {
         const uiContainer = new Container();
-        const matterContainer = new Container();
         const dragContainer = new Container();
         const mouseContainer = new Container();
         const stemContainer = new Container();
+        const matterContainer = new Container();
         const finishContainer = new Container();
         const boxContainer = new Container();
         const heroContainer = new Container();
         const overContainer = new Container();
 
         stage.addChild(uiContainer);
+        stage.addChild(stemContainer);
         stage.addChild(matterContainer);
         stage.addChild(boxContainer);
-        stage.addChild(stemContainer);
         stage.addChild(heroContainer);
         stage.addChild(finishContainer);
         stage.addChild(dragContainer);
@@ -103,13 +104,13 @@
             y: selector.y + 220, onComplete: () => {
               selector.init(levelIndex, optionCount);
             }
-          }))
+          }));
           tl.add(TweenLite.to(selector, 1, {y: selector.y}));
 
         }
       },
       showStem(stem, levelInfo, levelIndex) {
-        var info = levelInfo.questions[levelIndex].stem;
+        let info = levelInfo.questions[levelIndex].stem;
         stem.initLevel(info);
         stem.visible = true;
       },
@@ -263,7 +264,7 @@
 
 
             value.hero.x = 1700;
-            value.hero.y = 1000;
+            value.hero.y = 1080;
             this.heroState(value.hero, 'run_slow');
 
             value.train_pupu.play();
@@ -401,7 +402,9 @@
            * 点击提交之后
            */
           MyEvent.on(SUBMIT, () => {
-            if (check()) {
+            let success = check();
+            this.isRights[this.levelIndex] = success;
+            if (success) {
               showFinish('text1');
               value.title.changeDotState(self.levelIndex, 1);
             } else {
@@ -414,7 +417,7 @@
             const question = value.levelInfo.questions[self.levelIndex];
             const optionCount = question.optionCount;
             self.userAnswers = [[], [], []];
-            value.selector.init(self.levelIndex, optionCount)
+            value.selector.init(self.levelIndex, optionCount);
             matter.removeAllBox();
           });
           MyEvent.on(REMOVE_EXCEPT, (index) => {
@@ -440,6 +443,10 @@
               nextLevel();
             } else {
               let duration = 2;
+              let rightNum = 0;
+              self.isRights.forEach(value => {
+                if (value) rightNum++;
+              });
               value.background.speed = 20;
               self.heroState(value.hero, 'run_fast');
               stem.visible = false;
@@ -454,6 +461,7 @@
                 y: 220, onComplete: () => {
 
                   overContainer.addChild(value.pass);
+                  value.pass.showResult(rightNum, self.totalLevel);
                   value.pass.alpha = 0.2;
                   value.pass.interactive = true;
 

@@ -1,26 +1,55 @@
-import {Container, Sprite, Texture} from 'pixi.js';
-import {Linear, TimelineMax} from 'gsap';
+import {Container, Sprite, Text, Texture} from 'pixi.js';
+import Button from "./Button";
 
 export default class Pass extends Container {
   constructor(resources) {
     super();
 
-    this.bg = new PIXI.Graphics;
-    this.bg.beginFill(0x000000);
-    this.bg.drawRect(0, 0, 1920, 1080);
-    this.bg.endFill();
-    this.bg.alpha = 0.8;
+    this.url = './static/endscreen/';
+    this.btn = new Button(Texture.fromImage(this.url + 'end_btn_normal.png'),
+      Texture.fromImage(this.url + 'end_btn_select.png')
+    );
+    this.bg = new Sprite();
+    this.successTxt = new Text("", {
+      fontSize: 68,
+      fill: 0x678a12
+    });
+    this.totalTxt = new Text("", {
+      fontSize: 68,
+      fill: 0xb52535
+    });
+    this.btn.on('pointerdown',()=>{
+      window.location.reload();
+    })
+
+
     this.addChild(this.bg);
+    this.addChild(this.btn);
+    this.addChild(this.successTxt);
+    this.addChild(this.totalTxt);
+    this.successTxt.y = this.totalTxt.y = 440;
+    this.successTxt.x = 800;
+    this.totalTxt.x = 380;
+    this.btn.x = 443;
+    this.btn.y = 600;
+  }
 
-    let light = new Sprite(Texture.fromImage('./static/jump_light.png'));
-    let tl = new TimelineMax({repeat: -1});
-    light.anchor.set(0.5, 0.5);
-    light.scale.set(3, 3);
-    light.x = 1920 >> 1;
-    light.y = 400;
-    tl.to(light, 20, {rotation: Math.PI * 10, ease: Linear.easeNone});
-    this.addChild(light);
+  success() {
+    this.bg.texture = Texture.fromImage(this.url + 'endscreen1.jpg');
+  }
 
-    this.addChild(new Sprite(resources.jump_img.texture));
+  fail() {
+    this.bg.texture = Texture.fromImage(this.url + 'endscreen2.jpg');
+  }
+
+  showResult(rightNum, totalLevel) {
+    if (rightNum / totalLevel > 0.5) {
+      this.success()
+    } else {
+      this.fail();
+    }
+
+    this.successTxt.text = rightNum;
+    this.totalTxt.text = totalLevel
   }
 }

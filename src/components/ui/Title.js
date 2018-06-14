@@ -34,8 +34,9 @@ export default class Title extends Container {
     }));
 
     this.addChild(this.timeTxt);
-    this.timeTxt.x = 1720;
+    this.timeTxt.x = 1670;
     this.timeTxt.y = 40;
+    this.timeTxt.text = "00:00";
     this.tl = null;
     this.isTween = false;
 
@@ -49,7 +50,7 @@ export default class Title extends Container {
 
     let ticker = PIXI.ticker.shared;
     this.passedTime = 0;
-    this.stopTick = false;
+    this.stopTick = true;
     let self = this;
     ticker.add((time) => {
       if (this.stopTick) return;
@@ -63,11 +64,20 @@ export default class Title extends Container {
         } else {
           self.passedTime = 0;
         }
-        self.timeTxt.text = self.remaindTime;
+        self.timeTxt.text = this.getTime(self.remaindTime);
       }
     });
 
     this.createDot();
+  }
+
+  getTime(time) {
+    let minuter = Math.floor(time / 60);
+    let second = time % 60;
+    minuter = minuter < 10 ? "0" + minuter : minuter;
+    second = second < 10 ? "0" + second : second;
+    return minuter + ":" + second;
+
   }
 
   init(levelIndex) {
@@ -92,7 +102,7 @@ export default class Title extends Container {
     this.remaindTime = this.totalTime;
     this.stopTick = false;
     this.passedTime = 0;
-    this.timeTxt.text = this.remaindTime;
+    this.timeTxt.text = this.getTime(this.remaindTime);
   }
 
   stopTicker() {

@@ -4,7 +4,7 @@ export default class Stem extends Container {
   constructor() {
     super();
     this.textStyle = new TextStyle(new TextStyle({
-      fontSize: 60,
+      fontSize: 45,
       fill: '0xf0b416',
       align: 'center'
     }));

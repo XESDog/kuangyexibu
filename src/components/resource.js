@@ -39,6 +39,8 @@ export default function () {
       .add('btn_normal', './static/btn_normal.png')
       .add('btn_select', './static/btn_select.png')
       .add('start_game', './static/startscreen.jpg')
+      .add('end_screen1', './static/endscreen/endscreen1.jpg')
+      .add('end_screen2', './static/endscreen/endscreen2.jpg')
 
       .add('click', './static/sound/click.mp3')
       .add('lily_help', './static/sound/lily_help.mp3')
@@ -50,9 +52,6 @@ export default function () {
       .add('title2', './static/title_text2.png')
       .add('title3', './static/title_text3.png')
       .add('title4', './static/title_text4.png')
-      .add('title5', './static/title_text5.png')
-      .add('title6', './static/title_text6.png')
-      .add('title7', './static/title_text7.png')
       .load((loader, resources) => {
         resolve({
           hero: new PIXI.spine.Spine(resources.hero.spineData),
