@@ -1,17 +1,21 @@
-import {Container, Graphics,Sprite,Texture} from 'pixi.js';
+import {Container, Graphics} from 'pixi.js';
 import Button from "./Button";
 import Box from "./Box";
-import {BOX_SELECTED, MyEvent, RESET, SUBMIT} from "../MyEvent";
+import {RESET, SUBMIT} from "../Event";
 import DragBoxEvent from "../type/DragBoxEvent";
 import {TweenLite} from 'gsap';
+import {createSprite} from "../resource";
+import * as RES from "../RES";
+import {DragManager} from "../manager/DragManager";
 
 export default class Selector extends Container {
-  constructor(resources) {
+
+  constructor() {
     super();
 
-    this.table = new PIXI.Sprite(resources.table.texture);
-    this.submit = new Button(resources.submit_normal.texture, resources.submit_select.texture)
-    this.reset = new Button(resources.reset_normal.texture, resources.reset_select.texture)
+    this.table = createSprite(RES.SELECTOR_TABLE_PNG);
+    this.submit = new Button(RES.SELECTOR_SUBMIT_NORMAL_PNG, RES.SELECTOR_SUBMIT_SELECT_PNG)
+    this.reset = new Button(RES.SELECTOR_RESET_NORMAL_PNG, RES.SELECTOR_RESET_SELECT_PNG)
     this.boxContainer = new Container();
     this.maskMc = new Graphics();
 
@@ -22,7 +26,7 @@ export default class Selector extends Container {
     this.addChild(this.boxContainer);
 
     this.maskMc.beginFill(0x000000);
-    this.maskMc.drawRect(50, 0, this.table.width-100, this.table.height);
+    this.maskMc.drawRect(50, 0, this.table.width - 100, this.table.height);
     this.maskMc.endFill();
     this.maskMc.y = 865;
     this.addChild(this.maskMc);
@@ -66,12 +70,12 @@ export default class Selector extends Container {
   }
 
   _createEvent() {
-    this.submit.on('pointerdown', () => {
-      MyEvent.emit(SUBMIT)
+    /*this.submit.on('pointerdown', () => {
+      Event.emit(SUBMIT)
     });
     this.reset.on('pointerdown', () => {
-      MyEvent.emit(RESET);
-    })
+      Event.emit(RESET);
+    })*/
   }
 
   _initQueue() {
@@ -83,25 +87,25 @@ export default class Selector extends Container {
   _createBoxs() {
     for (let i = 0; i < this.optionCount; i++) {
       let box = new Box(this.levelIndex, i);
+      let dragBoxEvent = new DragBoxEvent();
       box.y = 900;
       box.x = 130 + 250 * i;
       box.scale.set(0.8, 0.8);
       box.interactive = true;
       box.index = i;
-      box.on('pointerdown', (e) => {
-        /**
-         * 0:关卡
-         * 1:箱子编号
-         * 2:全局坐标
-         * 3:0表示从selector选择箱子，1表示从火车选择箱子
-         */
-        let dragBoxEvent = new DragBoxEvent();
-        dragBoxEvent.boxIndex = box.index;
-        dragBoxEvent.boxPosition = e.data.global;
-        dragBoxEvent.from = DragBoxEvent.FROM_SELECTOR;
-        MyEvent.emit(BOX_SELECTED, dragBoxEvent);
-      });
+      /**
+       * 0:关卡
+       * 1:箱子编号
+       * 2:全局坐标
+       * 3:0表示从selector选择箱子，1表示从火车选择箱子
+       */
+
+      dragBoxEvent.index = box.index;
+      dragBoxEvent.from = DragBoxEvent.FROM_SELECTOR;
+      dragBoxEvent.icon = new Box(this.levelIndex, i, 0.5, 0.5);
+
       this.boxs.push(box);
+      DragManager.instance.register(box, dragBoxEvent);
     }
   }
 

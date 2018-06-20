@@ -1,17 +1,19 @@
 import {Container} from 'pixi.js';
 import Button from "./Button";
-import {MyEvent, START_GAME} from "../MyEvent";
+import {GAME_START, appEvent} from "../Event";
+import {createSprite} from "../resource";
+import {START_NORMAL_PNG, START_SELECT_PNG, STARTSCREEN_JPG} from "../RES";
 
 export default class Start extends Container {
-  constructor(resources) {
+  constructor() {
     super();
-    this.addChild(new PIXI.Sprite(resources.start_game.texture));
-    const btn = new Button(resources.btn_normal.texture, resources.btn_select.texture)
+    this.addChild(createSprite(STARTSCREEN_JPG));
+    const btn = new Button(START_NORMAL_PNG, START_SELECT_PNG);
     btn.on('pointerdown', () => {
-      MyEvent.emit(START_GAME);
+      appEvent.emit(GAME_START);
     });
     this.addChild(btn);
-    btn.x = 1920 - btn.width>>1;
+    btn.x = 1920 - btn.width >> 1;
     btn.y = 1080 - 300;
   }
 }

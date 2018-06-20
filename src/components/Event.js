@@ -1,5 +1,17 @@
 var EventEmitter = require('eventemitter3');
-export const MyEvent = new EventEmitter();
+
+export const appEvent=new EventEmitter();
+export const levelEvent = new EventEmitter();
+
+
+export const dragEvent = new EventEmitter();
+export const START_DRAG=Symbol()
+export const DRAG_MOVE=Symbol()
+export const END_DRAG=Symbol()
+
+
+
+export const GAME_START = Symbol();
 export const BOX_SELECTED = Symbol();
 export const SUBMIT = Symbol();
 export const RESET = Symbol();

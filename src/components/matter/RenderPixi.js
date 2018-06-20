@@ -409,7 +409,7 @@ var Vector = Matter.Vector;
       // sprite.scale.x = bodyRender.sprite.xScale || 1;
       // sprite.scale.y = bodyRender.sprite.yScale || 1;
     } else {
-      /*var primitiveId = 'b-' + body.id,
+      var primitiveId = 'b-' + body.id,
         primitive = render.primitives[primitiveId],
         container = render.container;
 
@@ -426,7 +426,7 @@ var Vector = Matter.Vector;
       // update body primitive
       primitive.position.x = body.position.x;
       primitive.position.y = body.position.y;
-      primitive.rotation = body.angle - primitive.initialAngle;*/
+      primitive.rotation = body.angle - primitive.initialAngle;
     }
   };
 

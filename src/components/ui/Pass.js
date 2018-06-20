@@ -6,8 +6,8 @@ export default class Pass extends Container {
     super();
 
     this.url = './static/endscreen/';
-    this.btn = new Button(Texture.fromImage(this.url + 'end_btn_normal.png'),
-      Texture.fromImage(this.url + 'end_btn_select.png')
+    this.btn = new Button(Texture.fromImage(this.url + 'end_normal.png'),
+      Texture.fromImage(this.url + 'end_select.png')
     );
     this.bg = new Sprite();
     this.successTxt = new Text("", {

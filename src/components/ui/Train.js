@@ -1,19 +1,18 @@
 import {Container} from 'pixi.js'
 import {TweenLite} from 'gsap';
+import {getAnimation} from "../resource";
 
 
 export default class Train extends Container {
-  constructor(spineData, trainNum) {
+  constructor(trainNum) {
     super();
 
-    const Spine = PIXI.spine.Spine;
-    this.spineData = spineData;
     this.y = 550;
     this.x = 500;
-    this.head = new Spine(this.spineData);
+    this.head = getAnimation('animation_train_json');
     this.head.state.setAnimation(0, 'train_top').loop = true;
     this.head.pivot.set(this.head.getLocalBounds().x, 0);
-    this.girl = new Spine(this.spineData);
+    this.girl = getAnimation('animation_train_json');
     this.girl.state.setAnimation(0, 'train_lily').loop = true;
     this.girl.x = this.head.width;
     this.girl.pivot.set(this.girl.getLocalBounds().x, 0);
@@ -24,7 +23,7 @@ export default class Train extends Container {
     this.trainStartX = this.girl.x + this.girl.width;
     this.trainWidth = null;
     for (let i = 0; i < trainNum; i++) {
-      let train = new Spine(this.spineData);
+      let train = getAnimation('animation_train_json');
       train.state.setAnimation(0, 'train_normal').loop = true;
       if (this.trainWidth === null) {
         this.trainWidth = train.width;

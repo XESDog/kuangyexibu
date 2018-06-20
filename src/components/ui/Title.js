@@ -1,46 +1,54 @@
-import {Container, Graphics, Text, TextStyle} from 'pixi.js';
+import {Container, Graphics, Sprite, Text, TextStyle} from 'pixi.js';
 import {TimelineMax, TweenLite} from 'gsap';
-import {MyEvent, TIME_OVER} from "../MyEvent";
+import {levelEvent, TIME_OVER} from "../Event";
+import {TITLE_PUSHHAND_PNG, TITLE_TIMESIGN_PNG} from "../RES";
+import {getTexture} from "../resource";
 
 export default class Title extends Container {
-  constructor(resources, totalTime, levelInfo) {
-    super();
+  static TimeTextStyle = new TextStyle(
+    {
+      fontSize: 60,
+      fill: '0xfed055',
+      align: 'center'
+    }
+  );
 
-    this.resources = resources;
-    this.levelInfo = levelInfo;
+  /**
+   *
+   * @param totalLevel 总关卡数
+   * @param totalTime 关卡时间
+   */
+  constructor(totalLevel, totalTime) {
+    super();
+    this.totalLevel = totalLevel;
     this.titleContainer = new Container();
-    this.title = new PIXI.Sprite();
+    this.title = new Sprite();
     this.title.x = 100;
 
-    this.pushhand = new PIXI.Sprite(resources.pushhand.texture);
+    this.pushhand = new Sprite(TITLE_PUSHHAND_PNG);
     this.pushhand.interactive = true;
-    // this.pushhand.cursor = 'pointer';
     this.pushhand.anchor.set(0.5, 0);
     this.pushhand.x = 1428;
     this.pushhand.y = -80;
 
-    this.timesign = new PIXI.Sprite(resources.timesign.texture);
-
-    this.addChild(this.pushhand);
-    this.addChild(this.timesign);
-
+    this.timesign = new Sprite(TITLE_TIMESIGN_PNG);
     this.timesign.x = 1580;
-    this.totalTime = totalTime;
-    this.remaindTime = totalTime;
-    this.timeTxt = new Text(this.remaindTime, new TextStyle({
-      fontSize: 60,
-      fill: '0xfed055',
-      align: 'center'
-    }));
 
-    this.addChild(this.timeTxt);
+    this._totalTime = totalTime;
+    this._remaindTime = totalTime;
+
+    this.timeTxt = new Text(this._remaindTime, Title.TimeTextStyle);
     this.timeTxt.x = 1670;
     this.timeTxt.y = 40;
     this.timeTxt.text = "00:00";
+
     this.tl = null;
     this.isTween = false;
-
     this.titleContainer.y = -500;
+
+    this.addChild(this.pushhand);
+    this.addChild(this.timesign);
+    this.addChild(this.timeTxt);
     this.addChild(this.titleContainer);
     this.titleContainer.addChild(this.title);
 
@@ -48,30 +56,42 @@ export default class Title extends Container {
       this.showTitle();
     });
 
-    let ticker = PIXI.ticker.shared;
-    this.passedTime = 0;
-    this.stopTick = true;
-    let self = this;
-    ticker.add((time) => {
-      if (this.stopTick) return;
-      self.passedTime += time;
-      if (self.passedTime > 60) {
-        self.remaindTime--;
-        if (self.remaindTime <= 0) {
-          self.stopTick = true;
-          MyEvent.emit(TIME_OVER);
 
-        } else {
-          self.passedTime = 0;
-        }
-        self.timeTxt.text = this.getTime(self.remaindTime);
-      }
-    });
-
-    this.createDot();
+    this._passedTime = 0;
+    // this._ticker = this._createTicker();
+    this._createDot();
   }
 
-  getTime(time) {
+  _createTicker() {
+    let ticker = new PIXI.ticker.Ticker();
+    const self = this;
+    ticker.add((time) => {
+
+      self._passedTime += time;
+      if (self._passedTime > 60) {
+        self._remaindTime--;
+        if (self._remaindTime <= 0) {
+          levelEvent.emit(TIME_OVER);
+          ticker.destroy();
+        } else {
+          self._passedTime = 0;
+        }
+        this._refreshTimeTxt();
+      }
+    });
+    ticker.start();
+    return ticker
+  }
+
+  _destroyTicker() {
+    this._ticker.destroy();
+  }
+
+  _refreshTimeTxt() {
+    this.timeTxt.text = this._getTime(this._remaindTime);
+  }
+
+  _getTime(time) {
     let minuter = Math.floor(time / 60);
     let second = time % 60;
     minuter = minuter < 10 ? "0" + minuter : minuter;
@@ -80,8 +100,12 @@ export default class Title extends Container {
 
   }
 
-  init(levelIndex) {
-    this.title.texture = this.resources['title' + (levelIndex + 1)].texture;
+  /**
+   * 显示关卡题目
+   * @param levelIndex
+   */
+  showQuestion(levelIndex) {
+    this.title.texture = getTexture(`title_title_${levelIndex + 1}_png`);
     this.showTitle();
   }
 
@@ -98,19 +122,8 @@ export default class Title extends Container {
     }
   }
 
-  resetTicker() {
-    this.remaindTime = this.totalTime;
-    this.stopTick = false;
-    this.passedTime = 0;
-    this.timeTxt.text = this.getTime(this.remaindTime);
-  }
-
-  stopTicker() {
-    this.stopTick = true;
-  }
-
-  createDot() {
-    let total = this.levelInfo.questions.length;
+  _createDot() {
+    let total = this.totalLevel
     for (var i = 0; i < total; i++) {
       let dot = new Dot(i + 1);
       dot.x = 400 + 70 * i;
@@ -120,32 +133,34 @@ export default class Title extends Container {
     }
   }
 
-  changeDotState(index, state) {
+  _changeDotState(index, state) {
     let dot = this.titleContainer.getChildByName('dot' + index);
     dot.changeState(state);
   }
 
-  loopSway() {
+  /*loopSway() {
     const tl = new TimelineMax({repeat: -1});
     tl.to(this.pushhand, 1, {rotation: Math.PI / 10})
       .to(this.pushhand, 2, {rotation: -Math.PI / 10})
       .to(this.pushhand, 2, {rotation: Math.PI / 10})
       .to(this.pushhand, 1, {rotation: 0})
       .to(this.pushhand, 1, {delay: 5})
-  }
+  }*/
 }
 
 class Dot extends Container {
+  static DotTextStyle = new TextStyle({
+    fill: '0x9f815a',
+    fontSize: 32,
+    align: 'center'
+  });
+
   constructor(index) {
     super();
     this.circle = new Graphics();
     this.addChild(this.circle);
     this.changeState(0);
-    this.txt = new Text("", new TextStyle({
-      fill: '0x9f815a',
-      fontSize: 32,
-      align: 'center'
-    }));
+    this.txt = new Text("", Dot.DotTextStyle);
     this.txt.anchor.set(0.5, 0.5);
     this.addChild(this.txt);
     this.txt.text = index;
