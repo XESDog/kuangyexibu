@@ -7,10 +7,10 @@ export default class Button extends Sprite {
     this.select = select;
     this.texture = this.normal;
     this.interactive = true;
-    this.on('mouseover', () => {
+    this.on('pointerover', () => {
       this.texture = this.select;
     });
-    this.on('mouseout', () => {
+    this.on('pointerout', () => {
       this.texture = this.normal;
     })
   }

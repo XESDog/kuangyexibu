@@ -1,12 +1,12 @@
 import {Container, Graphics} from 'pixi.js';
 import Button from "./Button";
 import Box from "./Box";
-import {RESET, SUBMIT} from "../Event";
 import DragBoxEvent from "../type/DragBoxEvent";
 import {TweenLite} from 'gsap';
 import {createSprite} from "../resource";
 import * as RES from "../RES";
 import {DragManager} from "../manager/DragManager";
+import {levelEvent, RESET, SUBMIT} from "../Event";
 
 export default class Selector extends Container {
 
@@ -14,8 +14,8 @@ export default class Selector extends Container {
     super();
 
     this.table = createSprite(RES.SELECTOR_TABLE_PNG);
-    this.submit = new Button(RES.SELECTOR_SUBMIT_NORMAL_PNG, RES.SELECTOR_SUBMIT_SELECT_PNG)
-    this.reset = new Button(RES.SELECTOR_RESET_NORMAL_PNG, RES.SELECTOR_RESET_SELECT_PNG)
+    this.submit = new Button(RES.SELECTOR_SUBMIT_NORMAL_PNG, RES.SELECTOR_SUBMIT_SELECT_PNG);
+    this.reset = new Button(RES.SELECTOR_RESET_NORMAL_PNG, RES.SELECTOR_RESET_SELECT_PNG);
     this.boxContainer = new Container();
     this.maskMc = new Graphics();
 
@@ -70,12 +70,12 @@ export default class Selector extends Container {
   }
 
   _createEvent() {
-    /*this.submit.on('pointerdown', () => {
-      Event.emit(SUBMIT)
+    this.submit.on('pointerdown', () => {
+      levelEvent.emit(SUBMIT)
     });
     this.reset.on('pointerdown', () => {
-      Event.emit(RESET);
-    })*/
+      levelEvent.emit(RESET)
+    })
   }
 
   _initQueue() {
@@ -86,13 +86,15 @@ export default class Selector extends Container {
 
   _createBoxs() {
     for (let i = 0; i < this.optionCount; i++) {
-      let box = new Box(this.levelIndex, i);
+      // let box = new Box(this.levelIndex, i);
+      let box = Box.getBox();
       let dragBoxEvent = new DragBoxEvent();
       box.y = 900;
       box.x = 130 + 250 * i;
       box.scale.set(0.8, 0.8);
       box.interactive = true;
       box.index = i;
+      box.changeOption(this.levelIndex, i);
       /**
        * 0:关卡
        * 1:箱子编号
@@ -144,7 +146,10 @@ export default class Selector extends Container {
   _update2() {
     this.boxs.forEach(value => {
       value.visible = false;
-      if (value.parent) value.parent.removeChild(value);
+      if (value.parent) {
+        Box.recycleBox(value);
+        value.parent.removeChild(value);
+      }
     });
     let len = this.queue.length >= 4 ? 4 : this.queue.length;
     for (let i = 0; i < len; i++) {
@@ -179,7 +184,10 @@ export default class Selector extends Container {
   _update() {
     this.boxs.forEach(value => {
       value.visible = false;
-      if (value.parent) value.parent.removeChild(value);
+      if (value.parent) {
+        Box.recycleBox(value);
+        value.parent.removeChild(value);
+      }
     });
     let len = this.queue.length >= 4 ? 4 : this.queue.length;
     for (let i = 0; i < len; i++) {

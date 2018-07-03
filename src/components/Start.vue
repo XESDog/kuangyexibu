@@ -4,9 +4,9 @@
 
 <script>
   import {Application, Container, Graphics} from 'pixi.js'
-  import {createSprite, getAnimation, load} from './resource';
+  import {getAnimation, load} from './resource';
   import {TweenLite} from 'gsap';
-  import {GAME_START, appEvent} from "./Event";
+  import {appEvent, GAME_START} from "./Event";
 
   let app;
   let resource;
@@ -27,6 +27,7 @@
       app.destroy();
     },
     mounted() {
+
       app = this.createApp();
       const stage = app.stage;
       const self = this;

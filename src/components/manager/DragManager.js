@@ -51,7 +51,7 @@ class DragManager {
   _onPointerDown(e) {
     this._isStartDrag = true;
     this._pointerGlobalP = e.data.global;
-    this._targetData = this._targets.get(e.target)
+    this._targetData = this._targets.get(e.target);
     dragEvent.emit(START_DRAG, this._targetData)
   }
 

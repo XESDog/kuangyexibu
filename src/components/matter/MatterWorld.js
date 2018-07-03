@@ -1,40 +1,20 @@
 import {Container, Rectangle} from 'pixi.js'
+import {DragManager} from "../manager/DragManager";
+import DragBoxEvent from "../type/DragBoxEvent";
 
-const Matter = require('matter-js');
-const RenderPixi = require('./RenderPixi.js');
-const Engine = Matter.Engine,
-  Render = RenderPixi,
-  Runner = Matter.Runner,
-  Composites = Matter.Composites,
-  Common = Matter.Common,
-  MouseConstraint = Matter.MouseConstraint,
-  World = Matter.World,
-  Bodies = Matter.Bodies;
 
+let bodyId = -1;
 
 export default class MatterWorld extends Container {
-  constructor(renderer) {
+  constructor() {
     super();
 
+    this.boxs = [];
     this.container = new Container();
     this.spriteContainer = new Container();
     this.addChild(this.container);
     this.addChild(this.spriteContainer);
 
-    // create engine
-    this.engine = Engine.create();
-    this.world = this.engine.world;
-
-    // create renderer
-    this.render = Render.create({
-      container: this.container,
-      spriteContainer: this.spriteContainer,
-      engine: this.engine,
-      renderer: renderer,
-      options: {
-        // wireframes: true,
-      }
-    });
     this.carriageW = 520;
     this.carriageH = 420;
     this.carriageY = 324;
@@ -42,71 +22,107 @@ export default class MatterWorld extends Container {
       new Rectangle(140, this.carriageY, this.carriageW, this.carriageH),
       new Rectangle(650, this.carriageY, this.carriageW, this.carriageH),
       new Rectangle(1190, this.carriageY, this.carriageW, this.carriageH),
-    ]
+    ];
+
+    this.MatterWorker = require('worker-loader!./matterWorker');
+    this.worker = new this.MatterWorker();
 
 
-    // create runner
-    this.runner = Runner.create();
-    Runner.run(this.runner, this.engine);
-    Render.run(this.render);
+    this.worker.onmessage = (e) => {
+      if (e.data.type === 'tick') {
+        let bodies = e.data.bodies;
+        bodies.forEach(body => {
+          if (body.userInfo.type === 'bound') {
 
+          } else if (body.userInfo.type === 'box') {
+            let x = body.position.x;
+            let y = body.position.y;
+            let angle = body.angle;
+            let texture = this.boxs[body.userInfo.id];
+            if (texture) {
+              texture.x = x;
+              texture.y = y;
+              texture.rotation = angle;
+              this.spriteContainer.addChild(texture);
+            }
+          }
+        });
+        this.spriteContainer.children.sort((a, b) => {
+          return b.y - a.y;
+        })
+      }
+    };
 
-    this.createArea();
-  }
-
-  createArea() {
     const w = 500;
     const h = 80;
-    let rects = [];
     this.rectangles.forEach(value => {
-      rects = rects.concat([Bodies.rectangle(value.x, value.y + value.height / 2, h, w, {isStatic: true}),
-        Bodies.rectangle(value.x + value.width / 2, value.y + value.height, w, h, {isStatic: true}),
-        Bodies.rectangle(value.x + value.width, value.y + value.height / 2, h, w, {isStatic: true}),
-      ])
-    });
-    World.add(this.world, rects)
-
-  }
-
-  queryPoint(x, y) {
-    return Matter.Query.point(Matter.Composite.allBodies(this.world), Matter.Vector.create(x, y));
-  }
-
-  removeBox(body) {
-    World.remove(this.world, body);
-  }
-
-  removeAllBox() {
-    let bodies = Matter.Composite.allBodies(this.world);
-    let body;
-    while (body = bodies.shift()) {
-      if (body.render && body.render.userInfo) {
-        this.removeBox(body)
-      }
-    }
+      this.addBound(value.x, value.y + value.height / 2, h, w, true);
+      this.addBound(value.x + value.width / 2, value.y + value.height, w, h, true);
+      this.addBound(value.x + value.width, value.y + value.height / 2, h, w, true);
+    })
   }
 
   /**
    *
-   * @param texture
    * @param levelIndex 关卡
    * @param boxIndex 箱子编号
    * @param index 放在哪个框中
    * @param x
    * @param y
+   * @param w box 200
+   * @param h box 162
+   * @param isStatic
    */
-  addBox(texture, levelIndex, boxIndex, index, x, y) {
-    World.add(this.world, [
-      Bodies.rectangle(x, y, 200, 162, {
-        render: {
-          sprite: {
-            texture: texture,
-          },
-          userInfo: [levelIndex, boxIndex, index]
-
+  addBox(x, y, w, h, isStatic, levelIndex, boxIndex, index) {
+    let Box = require("../ui/Box").default;
+    let b = Box.create(x, y, 0, 0.5, 0.5, levelIndex, boxIndex);
+    let dragBox = DragBoxEvent.create(
+      //todo:这里的icon如何回收
+      Box.create(
+        x,
+        y,
+        0,
+        0.5,
+        0.5,
+        levelIndex,
+        boxIndex),
+      boxIndex,
+      DragBoxEvent.FROM_TRAIN);
+    b.interactive = true;
+    DragManager.instance.register(b, dragBox);
+    b.on('pointerdown', () => {
+      DragManager.instance.unregister(b);
+      this.removeBox();
+    });
+    this.boxs[++bodyId] = b;
+    this.worker.postMessage({
+      type: 'add',
+      data: {
+        userInfo: {type: "box", levelIndex, boxIndex, index, id: bodyId},
+        rectangle: [x, y, w, h],
+        options: {
+          isStatic
         }
-      })
-    ]);
+      }
+    });
+  }
+
+  removeBox(id) {
+    this.worker.postMessage({type: 'remove', data: {userInfo: {id}}});
+
+  }
+
+  addBound(x, y, w, h, isStatic) {
+    this.worker.postMessage({
+      type: 'add',
+      data: {
+        userInfo: {type: "bound", id: bodyId},
+        rectangle: [x, y, w, h],
+        options: {
+          isStatic
+        }
+      }
+    });
   }
 
 }
