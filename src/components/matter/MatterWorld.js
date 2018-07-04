@@ -1,15 +1,41 @@
 import {Container, Rectangle} from 'pixi.js'
 import {DragManager} from "../manager/DragManager";
 import DragBoxEvent from "../type/DragBoxEvent";
+import {ADD_BOX, dragEvent, END_DRAG, matterEvent, REMOVE_BOX} from "../Event";
 
 
+//worker不能传输显示对象，因此，需要在这里建立id和显示对象的对应关系
+//将id传给worker，以便将显示对象和body对象对应起来
 let bodyId = -1;
+/**
+ * key=id;value=sprite
+ * @type {Object}
+ */
+let bodySprites = {};
+
+function getBodySprite(id) {
+  return bodySprites[id];
+}
+
+function removeBodySprite(id) {
+  let sprite = bodySprites[id];
+  delete  bodySprites[id];
+
+  return sprite;
+}
+
+function addBodySprite(sprite) {
+  bodySprites[++bodyId] = sprite;
+
+  return bodyId;
+}
+
+//========================================================
 
 export default class MatterWorld extends Container {
   constructor() {
     super();
 
-    this.boxs = [];
     this.container = new Container();
     this.spriteContainer = new Container();
     this.addChild(this.container);
@@ -32,18 +58,28 @@ export default class MatterWorld extends Container {
       if (e.data.type === 'tick') {
         let bodies = e.data.bodies;
         bodies.forEach(body => {
-          if (body.userInfo.type === 'bound') {
+          let userInfo = body.userInfo;
+          if (userInfo.type === 'bound') {
 
-          } else if (body.userInfo.type === 'box') {
+          } else if (userInfo.type === 'box') {
             let x = body.position.x;
             let y = body.position.y;
             let angle = body.angle;
-            let texture = this.boxs[body.userInfo.id];
+
+            let texture = getBodySprite(userInfo.id);
             if (texture) {
               texture.x = x;
               texture.y = y;
               texture.rotation = angle;
               this.spriteContainer.addChild(texture);
+            }
+
+            //超出世界范围，需要销毁
+            if (body.position.y > 3000) {
+              this.removeBox(userInfo.id);
+              let b = removeBodySprite(userInfo.id);
+              DragManager.instance.unregister(b);
+              b.destroy();
             }
           }
         });
@@ -62,6 +98,16 @@ export default class MatterWorld extends Container {
     })
   }
 
+  getWhichRectangle(x, y) {
+    let i = -1;
+    this.rectangles.some((value, index) => {
+      if (value.contains(x, y)) {
+        i = index;
+      }
+    });
+    return i;
+  }
+
   /**
    *
    * @param levelIndex 关卡
@@ -77,28 +123,38 @@ export default class MatterWorld extends Container {
     let Box = require("../ui/Box").default;
     let b = Box.create(x, y, 0, 0.5, 0.5, levelIndex, boxIndex);
     let dragBox = DragBoxEvent.create(
-      //todo:这里的icon如何回收
-      Box.create(
-        x,
-        y,
-        0,
-        0.5,
-        0.5,
-        levelIndex,
-        boxIndex),
+      levelIndex,
       boxIndex,
       DragBoxEvent.FROM_TRAIN);
     b.interactive = true;
     DragManager.instance.register(b, dragBox);
+
+    let id = addBodySprite(b);
+
     b.on('pointerdown', () => {
-      DragManager.instance.unregister(b);
-      this.removeBox();
+      this.removeBox(id);
+      let t = removeBodySprite(id);
+      let i=index;
+      let value = boxIndex;
+      t.alpha = 0.5;
+
+      matterEvent.emit(REMOVE_BOX,{index:i,value});
+      dragEvent.on(END_DRAG, onEndDrag);
+
+      function onEndDrag(data) {
+        let target = data.target;
+        if (target === b) {
+          DragManager.instance.unregister(target);
+          target.destroy();
+          dragEvent.off(END_DRAG, onEndDrag);
+        }
+      }
     });
-    this.boxs[++bodyId] = b;
+
     this.worker.postMessage({
       type: 'add',
       data: {
-        userInfo: {type: "box", levelIndex, boxIndex, index, id: bodyId},
+        userInfo: {type: "box", levelIndex, boxIndex, index, id},
         rectangle: [x, y, w, h],
         options: {
           isStatic
@@ -109,14 +165,20 @@ export default class MatterWorld extends Container {
 
   removeBox(id) {
     this.worker.postMessage({type: 'remove', data: {userInfo: {id}}});
+  }
 
+  removeAllBox() {
+    for (let key in bodySprites) {
+      console.log(`${key},${bodySprites[key]}`);
+
+    }
   }
 
   addBound(x, y, w, h, isStatic) {
     this.worker.postMessage({
       type: 'add',
       data: {
-        userInfo: {type: "bound", id: bodyId},
+        userInfo: {type: "bound"},
         rectangle: [x, y, w, h],
         options: {
           isStatic

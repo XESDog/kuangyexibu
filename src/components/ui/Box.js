@@ -4,7 +4,7 @@ import {BOX_PNG} from "../RES";
 
 
 let _boxs = [];
-let _batchCount = 10;
+let _batchCount = 2;
 
 function createBatchBox() {
   let i = 0;
@@ -36,8 +36,13 @@ export default class Box extends Container {
   static recycleBox(box) {
     box.x = 0;
     box.y = 0;
+    box.alpha = 1;
     box.scale.set(1, 1);
     box.setAnchor(0, 0);
+    box.removeAllListeners();
+    if (box.parent) {
+      box.parent.removeChild(box);
+    }
     _boxs.push(box);
   }
 
@@ -50,6 +55,10 @@ export default class Box extends Container {
 
     this.addChild(this.box);
     this.addChild(this.option);
+  }
+
+  destroy() {
+    Box.recycleBox(this);
   }
 
   changeOption(level, index) {

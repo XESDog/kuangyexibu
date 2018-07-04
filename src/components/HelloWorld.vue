@@ -14,7 +14,7 @@
   import {DragManager} from "./manager/DragManager";
   import {DragContainer} from "./ui/DragContainer";
   import MatterWorld from "./matter/MatterWorld";
-  import {dragEvent, END_DRAG} from "./Event";
+  import {ADD_BOX, dragEvent, END_DRAG, matterEvent, REMOVE_BOX} from "./Event";
 
 
   const stageWidth = 1920;
@@ -186,9 +186,27 @@
           title.showQuestion(self.levelIndex);
           selector.init(self.levelIndex, self.optionCount);
 
+          window.matter = matter;
+
+          self.$store.state.init(this.levelIndex);
+
           dragEvent.on(END_DRAG, (e) => {
-            matter.addBox(e.x, e.y, 200, 162, false, this.levelIndex, e.index, 1);
+            //todo:放到指定的框中
+            let i = matter.getWhichRectangle(e.x, e.y);
+            //指定框存在，且框中没有该箱子
+            if (i !== -1 && !self.$store.state.hasUserAnswer({index: i, value: e.boxIndex})) {
+              matter.addBox(e.x, e.y, 200, 162, false, e.levelIndex, e.boxIndex, i);
+              self.$store.commit('addUserAnswer', {index: i, value: e.boxIndex});
+            }
+          });
+
+          matterEvent.on(ADD_BOX, e => {
+            self.$store.commit('addUserAnswer', {index: e.index, value: e.value});
+          });
+          matterEvent.on(REMOVE_BOX, e => {
+            self.$store.commit('removeUserAnswer', {index: e.index, value: e.value});
           })
+
         })
     }
   }

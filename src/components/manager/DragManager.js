@@ -45,6 +45,7 @@ class DragManager {
 
   register(target, data) {
     this._targets.set(target, data);
+    data.target=target;
     target.on('pointerdown', this._onPointerDown, this)
   }
 
@@ -57,7 +58,11 @@ class DragManager {
 
   unregister(target) {
     target.off('pointerdown', this._onPointerDown, this);
+    this._targets.get(target).destroy();
     this._targets.delete(target);
+
+    /*仅注销拖拽事件，不等于需要回收*/
+    // target.destroy();
   }
 }
 

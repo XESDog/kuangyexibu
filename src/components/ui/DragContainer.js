@@ -18,7 +18,6 @@ class DragContainer extends Container {
     });
     dragEvent.on(END_DRAG, (data) => {
       this.removeChild(this._icon);
-      this._icon = null;
     });
   }
 }

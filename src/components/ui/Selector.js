@@ -54,6 +54,7 @@ export default class Selector extends Container {
   init(levelIndex, optionCount) {
 
     this.boxs.forEach(value => {
+      DragManager.instance.unregister(value);
       value.destroy();
     });
 
@@ -86,25 +87,14 @@ export default class Selector extends Container {
 
   _createBoxs() {
     for (let i = 0; i < this.optionCount; i++) {
-      // let box = new Box(this.levelIndex, i);
       let box = Box.getBox();
-      let dragBoxEvent = new DragBoxEvent();
+      let dragBoxEvent = DragBoxEvent.create(this.levelIndex, i, DragBoxEvent.FROM_SELECTOR);
       box.y = 900;
       box.x = 130 + 250 * i;
       box.scale.set(0.8, 0.8);
       box.interactive = true;
       box.index = i;
       box.changeOption(this.levelIndex, i);
-      /**
-       * 0:关卡
-       * 1:箱子编号
-       * 2:全局坐标
-       * 3:0表示从selector选择箱子，1表示从火车选择箱子
-       */
-
-      dragBoxEvent.index = box.index;
-      dragBoxEvent.from = DragBoxEvent.FROM_SELECTOR;
-      dragBoxEvent.icon = new Box(this.levelIndex, i, 0.5, 0.5);
 
       this.boxs.push(box);
       DragManager.instance.register(box, dragBoxEvent);

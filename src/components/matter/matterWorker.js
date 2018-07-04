@@ -16,11 +16,12 @@ Runner.run(runner, engine);
 onmessage = function (e) {
   let type = e.data.type;
   let userInfo = e.data.data.userInfo;
+  let body;
   switch (type) {
     case 'add':
       let rectangle = e.data.data.rectangle;
       let options = e.data.data.options;
-      let body = Bodies.rectangle(...rectangle, options);
+      body = Bodies.rectangle(...rectangle, options);
       World.add(world, body);
       //修正angle，使得箱子不旋转
       // Body.setInertia(body, Infinity);
@@ -28,7 +29,8 @@ onmessage = function (e) {
       break;
     case 'remove':
       let id = userInfo.id;
-      let body = getBodyById(id);
+      body = getBodyById(id);
+      if (!body) console.log('body未获取' + id);
       World.remove(world, body);
       break;
 
@@ -50,11 +52,14 @@ function query(x, y) {
 
 function getBodyById(id) {
   let bodies = Composite.allBodies(world);
-  let result;
+  let result = null;
   bodies.some(value => {
-    if (value.userInfo.id && value.userInfo.id === id) {
+    if (value.userInfo.id !== undefined &&
+      value.userInfo.id !== null &&
+      value.userInfo.id === id) {
       result = value;
       return true
     }
-  })
+  });
+  return result;
 }

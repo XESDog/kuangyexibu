@@ -9,6 +9,9 @@ export const START_DRAG=Symbol()
 export const DRAG_MOVE=Symbol()
 export const END_DRAG=Symbol()
 
+export const matterEvent=new EventEmitter();
+export const REMOVE_BOX=Symbol()
+export const ADD_BOX=Symbol();
 
 
 export const GAME_START = Symbol();
