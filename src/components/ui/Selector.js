@@ -6,7 +6,7 @@ import {TweenLite} from 'gsap';
 import {createSprite} from "../resource";
 import * as RES from "../RES";
 import {DragManager} from "../manager/DragManager";
-import {levelEvent, RESET, SUBMIT} from "../Event";
+import {dragEvent, END_DRAG, levelEvent, matterEvent, REMOVE_BOX, RESET, SUBMIT} from "../Event";
 
 export default class Selector extends Container {
 
@@ -98,6 +98,21 @@ export default class Selector extends Container {
 
       this.boxs.push(box);
       DragManager.instance.register(box, dragBoxEvent);
+
+      box.on('pointerdown', () => {
+        box.alpha = 0.5;
+
+        dragEvent.on(END_DRAG, onEndDrag);
+
+        function onEndDrag(data) {
+          let target = data.target;
+          if (target === box) {
+            DragManager.instance.unregister(target);
+            target.destroy();
+            dragEvent.off(END_DRAG, onEndDrag);
+          }
+        }
+      });
     }
   }
 
