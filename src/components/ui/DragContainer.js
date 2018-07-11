@@ -10,6 +10,8 @@ class DragContainer extends Container {
       if (data && data.icon) {
         this._icon = data.icon;
         this.addChild(this._icon);
+        this._icon.x = data.x;
+        this._icon.y = data.y;
       }
     });
     dragEvent.on(DRAG_MOVE, (p) => {

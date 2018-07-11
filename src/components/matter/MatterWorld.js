@@ -1,41 +1,41 @@
 import {Container, Rectangle} from 'pixi.js'
 import {DragManager} from "../manager/DragManager";
 import DragBoxEvent from "../type/DragBoxEvent";
-import {ADD_BOX, dragEvent, END_DRAG, matterEvent, REMOVE_BOX} from "../Event";
+import {dragEvent, END_DRAG, storeEvent, USER_ANSWERS} from "../Event";
 
 
-//worker不能传输显示对象，因此，需要在这里建立id和显示对象的对应关系
+//worker不能传输显示对象，因此，需要在这里建立boxIndex和显示对象的对应关系
 //将id传给worker，以便将显示对象和body对象对应起来
-let bodyId = -1;
 /**
  * key=id;value=sprite
  * @type {Object}
  */
 let bodySprites = {};
 
-function getBodySprite(id) {
-  return bodySprites[id];
+function getBodySprite(boxIndex) {
+  return bodySprites[boxIndex];
 }
 
-function removeBodySprite(id) {
-  let sprite = bodySprites[id];
-  delete  bodySprites[id];
+function removeBodySprite(boxIndex) {
+  let sprite = bodySprites[boxIndex];
+  delete  bodySprites[boxIndex];
 
   return sprite;
 }
 
-function addBodySprite(sprite) {
-  bodySprites[++bodyId] = sprite;
+function addBodySprite(sprite, boxIndex) {
+  bodySprites[boxIndex] = sprite;
 
-  return bodyId;
+  return boxIndex;
 }
 
 //========================================================
 
 export default class MatterWorld extends Container {
-  constructor() {
+  constructor(state) {
     super();
 
+    this.state = state;
     this.container = new Container();
     this.spriteContainer = new Container();
     this.addChild(this.container);
@@ -53,6 +53,8 @@ export default class MatterWorld extends Container {
     this.MatterWorker = require('worker-loader!./matterWorker');
     this.worker = new this.MatterWorker();
 
+//侦听userAnswers的变化
+    storeEvent.on(USER_ANSWERS, this.update, this);
 
     this.worker.onmessage = (e) => {
       if (e.data.type === 'tick') {
@@ -66,7 +68,7 @@ export default class MatterWorld extends Container {
             let y = body.position.y;
             let angle = body.angle;
 
-            let texture = getBodySprite(userInfo.id);
+            let texture = getBodySprite(userInfo.boxIndex);
             if (texture) {
               texture.x = x;
               texture.y = y;
@@ -99,7 +101,7 @@ export default class MatterWorld extends Container {
   }
 
   getWhichRectangle(x, y) {
-    let i = -1;
+    let i = 3;
     this.rectangles.some((value, index) => {
       if (value.contains(x, y)) {
         i = index;
@@ -112,14 +114,11 @@ export default class MatterWorld extends Container {
    *
    * @param levelIndex 关卡
    * @param boxIndex 箱子编号
-   * @param index 放在哪个框中
    * @param x
    * @param y
-   * @param w box 200
-   * @param h box 162
    * @param isStatic
    */
-  addBox(x, y, w, h, isStatic, levelIndex, boxIndex, index) {
+  addBox(x, y, isStatic, levelIndex, boxIndex) {
     let Box = require("../ui/Box").default;
     let b = Box.create(x, y, 0, 0.5, 0.5, levelIndex, boxIndex);
     let dragBox = DragBoxEvent.create(
@@ -129,33 +128,25 @@ export default class MatterWorld extends Container {
     b.interactive = true;
     DragManager.instance.register(b, dragBox);
 
-    let id = addBodySprite(b);
+    addBodySprite(b, boxIndex);
+    this.spriteContainer.addChild(b);
 
     b.on('pointerdown', () => {
-      this.removeBox(id);
-      let t = removeBodySprite(id);
-      let i=index;
-      let value = boxIndex;
-      t.alpha = 0.5;
-
-      matterEvent.emit(REMOVE_BOX,{index:i,value});
-      dragEvent.on(END_DRAG, onEndDrag);
-
-      function onEndDrag(data) {
-        let target = data.target;
-        if (target === b) {
-          DragManager.instance.unregister(target);
-          target.destroy();
-          dragEvent.off(END_DRAG, onEndDrag);
-        }
-      }
+      b.alpha = 0.5;
+      dragEvent.on(END_DRAG, onEndDrag)
     });
+
+    function onEndDrag() {
+      b.alpha = 1;
+      dragEvent.off(END_DRAG, onEndDrag);
+    }
+
 
     this.worker.postMessage({
       type: 'add',
       data: {
-        userInfo: {type: "box", levelIndex, boxIndex, index, id},
-        rectangle: [x, y, w, h],
+        userInfo: {type: "box", levelIndex, boxIndex},
+        rectangle: [x, y, 200, 162],
         options: {
           isStatic
         }
@@ -163,15 +154,23 @@ export default class MatterWorld extends Container {
     });
   }
 
-  removeBox(id) {
-    this.worker.postMessage({type: 'remove', data: {userInfo: {id}}});
+  removeBox(boxIndex) {
+    this.worker.postMessage({type: 'remove', data: {userInfo: {boxIndex}}});
+    let b = removeBodySprite(boxIndex);
+    DragManager.instance.unregister(b);
+    b.destroy();
   }
 
-  removeAllBox() {
-    for (let key in bodySprites) {
-      console.log(`${key},${bodySprites[key]}`);
-
-    }
+  update(data) {
+    let state = this.state;
+    data.forEach(value => {
+      if (value.from < 3) {
+        this.removeBox(value.value);
+      }
+      if (value.to < 3) {
+        this.addBox(state.mouseX, state.mouseY, false, state.levelIndex, value.value)
+      }
+    })
   }
 
   addBound(x, y, w, h, isStatic) {

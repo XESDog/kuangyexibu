@@ -14,7 +14,7 @@
   import {DragManager} from "./manager/DragManager";
   import {DragContainer} from "./ui/DragContainer";
   import MatterWorld from "./matter/MatterWorld";
-  import {ADD_BOX, dragEvent, END_DRAG, matterEvent, REMOVE_BOX} from "./Event";
+  import {dragEvent, END_DRAG, levelEvent, RESET, storeEvent, SUBMIT, USER_ANSWERS} from "./Event";
 
 
   const stageWidth = 1920;
@@ -36,8 +36,34 @@
           return this.levelInfo.totalTime;
         }
       },
-      ...mapState(['levelInfo', 'levelIndex', 'totalLevel', 'userAnswers', 'answers', 'isRight']),
-      ...mapGetters(['optionCount'])
+      ...mapState(['levelInfo', 'levelIndex', 'totalLevel', 'lastUserAnswers', 'userAnswers', 'answers', 'isRight']),
+      ...mapGetters(['optionCount']),
+    },
+    watch: {
+      userAnswers: function () {
+        let result = [];
+        let from, to;
+        for (let i = 0; i < this.optionCount; i++) {
+          this.lastUserAnswers.forEach((v1, index) => {
+            v1.forEach(v2 => {
+              if (v2 === i) {
+                from = index;
+              }
+            })
+          });
+          this.$store.state.userAnswers.forEach((v1, index) => {
+            v1.forEach(v2 => {
+              if (v2 === i) {
+                to = index;
+              }
+            })
+          });
+          if ((from !== undefined && from !== null) && from !== to) {
+            result.push({from, to, value: i});
+          }
+        }
+        storeEvent.emit(USER_ANSWERS, result);
+      }
     },
     destroyed() {
       let RES = require('./RES');
@@ -175,10 +201,11 @@
           })
         })
         .then(() => {
-          selector = new Selector();
+          selector = new Selector(self.$store.state);
           stem = new Stem();
           title = new Title(self.totalLevel, self.totalTime);
-          matter = new MatterWorld();
+          matter = new MatterWorld(self.$store.state);
+
           uiContainer.addChild(selector);
           uiContainer.addChild(title);
           uiContainer.addChild(stem);
@@ -186,25 +213,22 @@
           title.showQuestion(self.levelIndex);
           selector.init(self.levelIndex, self.optionCount);
 
-          window.matter = matter;
-
           self.$store.state.init(this.levelIndex);
 
           dragEvent.on(END_DRAG, (e) => {
-            //todo:放到指定的框中
+            //放到指定的框中
             let i = matter.getWhichRectangle(e.x, e.y);
-            //指定框存在，且框中没有该箱子
-            if (i !== -1 && !self.$store.state.hasUserAnswer({index: i, value: e.boxIndex})) {
-              matter.addBox(e.x, e.y, 200, 162, false, e.levelIndex, e.boxIndex, i);
-              self.$store.commit('addUserAnswer', {index: i, value: e.boxIndex});
-            }
+            self.$store.commit('moveAnswerTo', {index: i, value: e.boxIndex, mouseX: e.x, mouseY: e.y});
           });
 
-          matterEvent.on(ADD_BOX, e => {
-            self.$store.commit('addUserAnswer', {index: e.index, value: e.value});
+          levelEvent.on(SUBMIT, () => {
+            let result = self.$store.state.check();
+            if (result) {
+
+            }
           });
-          matterEvent.on(REMOVE_BOX, e => {
-            self.$store.commit('removeUserAnswer', {index: e.index, value: e.value});
+          levelEvent.on(RESET, () => {
+            self.$store.state.init(self.levelIndex + 1);
           })
 
         })

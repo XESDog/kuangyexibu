@@ -48,12 +48,12 @@ export default class DragBoxEvent {
    * 触发对象
    * @type {null}
    */
-  target=null;
+  target = null;
 
   destroy() {
     let Box = require('../ui/Box').default;
     Box.recycleBox(this.icon);
 
-    this.target=null;
+    this.target = null;
   }
 }

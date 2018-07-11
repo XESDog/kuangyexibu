@@ -8,47 +8,65 @@ const state = {
   levelInfo: data,
   levelIndex: 0,
   totalLevel: data.questions.length,
-  userAnswers: [[], [], []],//用户答题信息
+  /**
+   * 用户答题信息
+   * 0,1,2为3个框中箱子信息
+   * 3为selector中箱子信息
+   */
+  lastUserAnswers: [[], [], [], []],
+  userAnswers: [[], [], [], []],
   answers: null,//答案
   isRight: [],//用户对错情况
-  hasUserAnswer({index,value}){
-    let arr=this.userAnswers[index];
-    let i = arr.indexOf(value);
-    return i!==-1;
-  },
-  init(level){
-    this.levelIndex=level;
-    this.userAnswers = [[], [], []];
+  mouseX: 0,
+  mouseY: 0,
+  init(level) {
+    this.levelIndex = level;
+    this.answers = data.questions[this.levelIndex].answers.concat();
+    let total = this.levelInfo.questions[this.levelIndex].optionCount;
+    let temp = [];
+    for (let i = 0; i < total; i++) {
+      temp.push(i);
+    }
+    this.userAnswers = [[], [], [], temp];
+    this.lastUserAnswers = [[], [], [], temp];
     this.isRight = [];
-    this.answers=data.questions[this.levelIndex].answers.concat();
   },
-  check(){
-
+  /**
+   * 检测用户答案是否正确
+   * @return {boolean}
+   */
+  check() {
+    let self = this;
+    let answers = JSON.parse(JSON.stringify(self.answers));
+    let userAnswers = JSON.parse(JSON.stringify(self.userAnswers));
+    return answers.every((value, index) => {
+      return JSON.stringify(value.sort()) === JSON.stringify(userAnswers[index].sort());
+    })
   }
 };
-const actions = {
-
-};
+const actions = {};
 const getters = {
-  optionCount:state=>{
+  optionCount: state => {
     return state.levelInfo.questions[state.levelIndex].optionCount;
   },
 
 };
 const mutations = {
-  addUserAnswer(state,{index,value}){
-    let arr=state.userAnswers[index];
-    let i=arr.indexOf(value)
-    if(i===-1){
-      arr.push(value);
-    }
-  },
-  removeUserAnswer(state,{index,value}){
-    let arr=state.userAnswers[index];
-    let i=arr.indexOf(value)
-    if(i!==-1){
-      arr.splice(i, 1);
-    }
+  moveAnswerTo(state, {index, value, mouseX, mouseY}/*index:0,1,2代表火车中的框,3代表selector*/) {
+
+    state.lastUserAnswers = JSON.parse(JSON.stringify(state.userAnswers));
+
+    //找到value所在位置并删除
+    state.userAnswers.some((v1, index, arr) => {
+      arr[index] = v1.filter(v2 => {
+        return value !== v2
+      })
+    });
+    state.mouseX = mouseX;
+    state.mouseY = mouseY;
+    //放置到指定位置，从前插入，selector有这样的要求
+    state.userAnswers[index].unshift(value);
+    state.userAnswers = state.userAnswers.concat();
   }
 };
 

@@ -24,7 +24,7 @@ class DragManager {
   init(stage) {
     this._stage = stage;
     this._stage.on('pointermove', (e) => {
-      if (this._isStartDrag&&this._targetData) {
+      if (this._isStartDrag && this._targetData) {
         this._pointerGlobalP = e.data.global;
         dragEvent.emit(DRAG_MOVE, this._pointerGlobalP);
       }
@@ -45,7 +45,7 @@ class DragManager {
 
   register(target, data) {
     this._targets.set(target, data);
-    data.target=target;
+    data.target = target;
     target.on('pointerdown', this._onPointerDown, this)
   }
 
@@ -53,11 +53,14 @@ class DragManager {
     this._isStartDrag = true;
     this._pointerGlobalP = e.data.global;
     this._targetData = this._targets.get(e.target);
+    this._targetData.x = e.data.global.x;
+    this._targetData.y = e.data.global.y;
     dragEvent.emit(START_DRAG, this._targetData)
   }
 
   unregister(target) {
     target.off('pointerdown', this._onPointerDown, this);
+    //销毁DragBoxEvent
     this._targets.get(target).destroy();
     this._targets.delete(target);
 

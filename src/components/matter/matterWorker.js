@@ -28,9 +28,8 @@ onmessage = function (e) {
       body.userInfo = userInfo;
       break;
     case 'remove':
-      let id = userInfo.id;
+      let id = userInfo.boxIndex;
       body = getBodyById(id);
-      if (!body) console.log('body未获取' + id);
       World.remove(world, body);
       break;
 
@@ -50,13 +49,13 @@ function query(x, y) {
   return Matter.Query.point(bodies, {x, y});
 }
 
-function getBodyById(id) {
+function getBodyById(boxIndex) {
   let bodies = Composite.allBodies(world);
   let result = null;
   bodies.some(value => {
-    if (value.userInfo.id !== undefined &&
-      value.userInfo.id !== null &&
-      value.userInfo.id === id) {
+    if (value.userInfo.boxIndex !== undefined &&
+      value.userInfo.boxIndex !== null &&
+      value.userInfo.boxIndex === boxIndex) {
       result = value;
       return true
     }

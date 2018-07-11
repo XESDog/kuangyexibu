@@ -124,7 +124,7 @@ export default class Title extends Container {
 
   _createDot() {
     let total = this.totalLevel
-    for (var i = 0; i < total; i++) {
+    for (let i = 0; i < total; i++) {
       let dot = new Dot(i + 1);
       dot.x = 400 + 70 * i;
       dot.y = 170;
@@ -137,15 +137,6 @@ export default class Title extends Container {
     let dot = this.titleContainer.getChildByName('dot' + index);
     dot.changeState(state);
   }
-
-  /*loopSway() {
-    const tl = new TimelineMax({repeat: -1});
-    tl.to(this.pushhand, 1, {rotation: Math.PI / 10})
-      .to(this.pushhand, 2, {rotation: -Math.PI / 10})
-      .to(this.pushhand, 2, {rotation: Math.PI / 10})
-      .to(this.pushhand, 1, {rotation: 0})
-      .to(this.pushhand, 1, {delay: 5})
-  }*/
 }
 
 class Dot extends Container {
