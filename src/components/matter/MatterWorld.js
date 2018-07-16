@@ -161,6 +161,12 @@ export default class MatterWorld extends Container {
     b.destroy();
   }
 
+  removeAllBox() {
+    for (let key in bodySprites) {
+      this.removeBox(key);
+    }
+  }
+
   update(data) {
     let state = this.state;
     data.forEach(value => {

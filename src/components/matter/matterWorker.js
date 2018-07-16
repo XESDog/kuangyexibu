@@ -29,6 +29,7 @@ onmessage = function (e) {
       break;
     case 'remove':
       let id = userInfo.boxIndex;
+      id = parseInt(id);
       body = getBodyById(id);
       World.remove(world, body);
       break;

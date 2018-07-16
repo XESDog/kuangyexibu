@@ -20,6 +20,7 @@ const state = {
   mouseX: 0,
   mouseY: 0,
   init(level) {
+    if (level >= this.totalLevel) throw new Error(`总计${this.totalLevel}关，level值${level}超过范围`);
     this.levelIndex = level;
     this.answers = data.questions[this.levelIndex].answers.concat();
     let total = this.levelInfo.questions[this.levelIndex].optionCount;
@@ -42,6 +43,9 @@ const state = {
     return answers.every((value, index) => {
       return JSON.stringify(value.sort()) === JSON.stringify(userAnswers[index].sort());
     })
+  },
+  record(value){
+    this.isRight.push(value);
   }
 };
 const actions = {};

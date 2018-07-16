@@ -5,7 +5,7 @@ import DragBoxEvent from "../type/DragBoxEvent";
 import {createSprite} from "../resource";
 import * as RES from "../RES";
 import {DragManager} from "../manager/DragManager";
-import {dragEvent, END_DRAG, levelEvent, RESET, storeEvent, SUBMIT, USER_ANSWERS} from "../Event";
+import {dragEvent, END_DRAG, LEVEL_PASS, levelEvent, RESET, storeEvent, SUBMIT, USER_ANSWERS} from "../Event";
 
 export default class Selector extends Container {
 
@@ -75,7 +75,7 @@ export default class Selector extends Container {
 
   _createEvent() {
     this.submit.on('pointerdown', () => {
-      levelEvent.emit(SUBMIT)
+      levelEvent.emit(LEVEL_PASS)
     });
     this.reset.on('pointerdown', () => {
       levelEvent.emit(RESET)

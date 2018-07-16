@@ -14,7 +14,7 @@
   import {DragManager} from "./manager/DragManager";
   import {DragContainer} from "./ui/DragContainer";
   import MatterWorld from "./matter/MatterWorld";
-  import {dragEvent, END_DRAG, levelEvent, RESET, storeEvent, SUBMIT, USER_ANSWERS} from "./Event";
+  import {dragEvent, END_DRAG, LEVEL_PASS, levelEvent, RESET, storeEvent, SUBMIT, USER_ANSWERS} from "./Event";
 
 
   const stageWidth = 1920;
@@ -227,8 +227,13 @@
 
             }
           });
-          levelEvent.on(RESET, () => {
-            self.$store.state.init(self.levelIndex + 1);
+          levelEvent.on(LEVEL_PASS, () => {
+            let store=self.$store;
+            let state = store.state;
+            state.record(state.check())
+            state.init(self.levelIndex + 1);
+            matter.removeAllBox();
+            selector.init(self.levelIndex,self.optionCount)
           })
 
         })
