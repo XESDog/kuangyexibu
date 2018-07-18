@@ -1,14 +1,18 @@
-import {Container, Sprite, Text, Texture} from 'pixi.js';
+import {Container, Sprite, Text} from 'pixi.js';
 import Button from "./Button";
+import {
+  ENDSCREEN_END_NORMAL_PNG,
+  ENDSCREEN_END_SELECT_PNG,
+  ENDSCREEN_ENDSCREEN1_JPG,
+  ENDSCREEN_ENDSCREEN2_JPG
+} from "../RES";
+
 
 export default class Pass extends Container {
-  constructor(resources) {
+  constructor() {
     super();
-
-    this.url = './static/endscreen/';
-    this.btn = new Button(Texture.fromImage(this.url + 'end_normal.png'),
-      Texture.fromImage(this.url + 'end_select.png')
-    );
+    this.btn = new Button(ENDSCREEN_END_NORMAL_PNG,
+      ENDSCREEN_END_SELECT_PNG);
     this.bg = new Sprite();
     this.successTxt = new Text("", {
       fontSize: 68,
@@ -18,9 +22,9 @@ export default class Pass extends Container {
       fontSize: 68,
       fill: 0xb52535
     });
-    this.btn.on('pointerdown',()=>{
+    this.btn.on('pointerdown', () => {
       window.location.reload();
-    })
+    });
 
 
     this.addChild(this.bg);
@@ -35,11 +39,11 @@ export default class Pass extends Container {
   }
 
   success() {
-    this.bg.texture = Texture.fromImage(this.url + 'endscreen1.jpg');
+    this.bg.texture = ENDSCREEN_ENDSCREEN1_JPG
   }
 
   fail() {
-    this.bg.texture = Texture.fromImage(this.url + 'endscreen2.jpg');
+    this.bg.texture = ENDSCREEN_ENDSCREEN2_JPG
   }
 
   showResult(rightNum, totalLevel) {

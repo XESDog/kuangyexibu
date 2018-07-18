@@ -10,6 +10,7 @@
 
   let app;
   let resource;
+  let Start, RES, start, uiContainer, mouseContainer, mask, MouseCursor;
 
   export default {
     name: "start",
@@ -31,7 +32,7 @@
       app = this.createApp();
       const stage = app.stage;
       const self = this;
-      let Start, RES, start, uiContainer, mouseContainer, mask, MouseCursor;
+
       app.view.style.width = '19.2rem';
       app.view.style.height = '10.8rem';
       self.$el.appendChild(app.view);
@@ -65,6 +66,7 @@
           return new Promise(resolve => {
             appEvent.once(GAME_START, () => {
               uiContainer.removeChild(start);
+              start.destroy();
               resolve(res);
             })
           })
@@ -107,6 +109,7 @@
               x: 0.2, y: 0.2, onComplete: () => {
                 stage.mask = null;
                 stage.removeChild(mask);
+                mask.destroy();
                 uiContainer.removeChildren();
                 resolve(res);
               }

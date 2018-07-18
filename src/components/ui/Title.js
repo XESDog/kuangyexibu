@@ -15,12 +15,11 @@ export default class Title extends Container {
 
   /**
    *
-   * @param totalLevel 总关卡数
-   * @param totalTime 关卡时间
+   * @param state
    */
-  constructor(totalLevel, totalTime) {
+  constructor(state) {
     super();
-    this.totalLevel = totalLevel;
+    this.totalLevel = state.totalLevel;
     this.titleContainer = new Container();
     this.title = new Sprite();
     this.title.x = 100;
@@ -34,8 +33,8 @@ export default class Title extends Container {
     this.timesign = new Sprite(TITLE_TIMESIGN_PNG);
     this.timesign.x = 1580;
 
-    this._totalTime = totalTime;
-    this._remaindTime = totalTime;
+    this._totalTime = state.totalTime;
+    this._remaindTime = state.totalTime;
 
     this.timeTxt = new Text(this._remaindTime, Title.TimeTextStyle);
     this.timeTxt.x = 1670;
@@ -45,6 +44,8 @@ export default class Title extends Container {
     this.tl = null;
     this.isTween = false;
     this.titleContainer.y = -500;
+
+    this._ticker = null;
 
     this.addChild(this.pushhand);
     this.addChild(this.timesign);
@@ -56,37 +57,37 @@ export default class Title extends Container {
       this.showTitle();
     });
 
-
-    this._passedTime = 0;
-    // this._ticker = this._createTicker();
     this._createDot();
+
   }
 
-  _createTicker() {
-    let ticker = new PIXI.ticker.Ticker();
+  createTicker() {
     const self = this;
-    ticker.add((time) => {
+    this._passedTime = 0;
+    this._remaindTime = this._totalTime;
 
-      self._passedTime += time;
-      if (self._passedTime > 60) {
-        self._remaindTime--;
-        if (self._remaindTime <= 0) {
-          levelEvent.emit(TIME_OVER);
-          ticker.destroy();
-        } else {
-          self._passedTime = 0;
+    if (this._ticker === null) {
+      this._ticker = new PIXI.ticker.Ticker();
+      this._ticker.add((time) => {
+        self._passedTime += time;
+        if (self._passedTime > 60) {
+          self._remaindTime--;
+          if (self._remaindTime <= 0) {
+            levelEvent.emit(TIME_OVER);
+          } else {
+            self._passedTime = 0;
+          }
+          this._refreshTimeTxt();
         }
-        this._refreshTimeTxt();
-      }
-    });
-    ticker.start();
-    return ticker
+      });
+
+    }
+    this._ticker.start();
   }
 
-  _destroyTicker() {
-    this._ticker.destroy();
+  destroyTicker() {
+    this._ticker.stop();
   }
-
   _refreshTimeTxt() {
     this.timeTxt.text = this._getTime(this._remaindTime);
   }
@@ -104,7 +105,7 @@ export default class Title extends Container {
    * 显示关卡题目
    * @param levelIndex
    */
-  showQuestion(levelIndex) {
+  update(levelIndex) {
     this.title.texture = getTexture(`title_title_${levelIndex + 1}_png`);
     this.showTitle();
   }

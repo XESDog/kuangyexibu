@@ -14,7 +14,7 @@
   import {DragManager} from "./manager/DragManager";
   import {DragContainer} from "./ui/DragContainer";
   import MatterWorld from "./matter/MatterWorld";
-  import {dragEvent, END_DRAG, LEVEL_PASS, levelEvent, RESET, storeEvent, SUBMIT, USER_ANSWERS} from "./Event";
+  import {dragEvent, END_DRAG, LEVEL_PASS, levelEvent, RESET, storeEvent, TIME_OVER, USER_ANSWERS} from "./Event";
 
 
   const stageWidth = 1920;
@@ -36,8 +36,18 @@
           return this.levelInfo.totalTime;
         }
       },
-      ...mapState(['levelInfo', 'levelIndex', 'totalLevel', 'lastUserAnswers', 'userAnswers', 'answers', 'isRight']),
-      ...mapGetters(['optionCount']),
+      ...mapState(['levelInfo', 'levelIndex', 'totalLevel',
+        'lastUserAnswers', 'userAnswers', 'answers', 'isRight']),
+      ...mapGetters(['optionCount', 'rightNum', 'stem']),
+      /**
+       * 是否最后一关
+       * @return {boolean}
+       */
+      isLastLevel: {
+        get() {
+          return this.levelIndex >= this.totalLevel - 1;
+        }
+      },
     },
     watch: {
       userAnswers: function () {
@@ -81,6 +91,7 @@
           backgroundColor: 0x000000,
         })
       },
+
       createContainerAndLayout(stage) {
         //背景，火车
         const uiContainer = new Container();
@@ -96,6 +107,8 @@
         const finishContainer = new Container();
         //英雄
         const heroContainer = new Container();
+        //结果页
+        const passContainer = new Container();
 
         stage.addChild(uiContainer);
         stage.addChild(stemContainer);
@@ -103,6 +116,7 @@
         stage.addChild(heroContainer);
         stage.addChild(finishContainer);
         stage.addChild(dragContainer);
+        stage.addChild(passContainer);
         stage.addChild(mouseContainer);
 
         return {
@@ -113,6 +127,7 @@
           dragContainer,
           mouseContainer,
           heroContainer,
+          passContainer,
         };
       },
     },
@@ -124,6 +139,7 @@
       app = this.createApp();
       const stage = app.stage;
       const {
+        passContainer,
         uiContainer,
         matterContainer,
         stemContainer,
@@ -133,8 +149,10 @@
         heroContainer,
       } = this.createContainerAndLayout(stage);
 
-      let mask, matter, BackGround, RES, Selector, Stem, Title, Box,
-        hero, train, background, selector, stem, title, MouseCursor;
+      let mask, matter, powerup, BackGround, RES, Selector, Stem, Title, Box, pass,
+        hero, train, background, selector, stem, title, MouseCursor, PowerUp, Pass;
+      let store = self.$store;
+      let state = store.state;
 
       RES = require('./RES');
       BackGround = require('./ui/BackGround').default;
@@ -142,6 +160,8 @@
       Stem = require('./ui/Stem').default;
       Title = require('./ui/Title').default;
       MouseCursor = require('./ui/MouseCursor').default;
+      PowerUp = require('./ui/PowerUp').PowerUp;
+      Pass = require('./ui/Pass').default;
 
       DragManager.instance.init(stage);
 
@@ -154,9 +174,14 @@
       mouseContainer.addChild(new MouseCursor());
 
 
-      Promise.resolve()
-      //火车开入
-        .then(() => {
+      import(/*webpackChunkName:data*/'../../static/data.json')
+        .then(value => {
+          return value;
+        })
+        //火车开入
+        .then((value) => {
+
+          state.init(this.levelIndex, value);
 
           RES.SOUND_TRAIN_GROUND_MP3.loop = true;
           // RES.SOUND_TRAIN_GROUND_MP3.play();
@@ -184,7 +209,7 @@
           heroContainer.addChild(hero);
           hero.x = 1700;
           hero.y = 1080;
-          hero.setState('run_slow');
+          hero.slow();
 
           background = new BackGround();
           uiContainer.addChild(background);
@@ -194,48 +219,87 @@
 
           return new Promise(resolve => {
 
-            train.gotoTrain(this.totalLevel - 1, 3)
+            train.gotoTrain(0, 3)
               .then(() => {
                 resolve();
               });
           })
         })
         .then(() => {
-          selector = new Selector(self.$store.state);
+
+          selector = new Selector(state);
           stem = new Stem();
-          title = new Title(self.totalLevel, self.totalTime);
-          matter = new MatterWorld(self.$store.state);
+          title = new Title(state);
+          matter = new MatterWorld(state);
+          powerup = new PowerUp();
+          pass = new Pass(state);
 
           uiContainer.addChild(selector);
           uiContainer.addChild(title);
           uiContainer.addChild(stem);
           matterContainer.addChild(matter);
-          title.showQuestion(self.levelIndex);
-          selector.init(self.levelIndex, self.optionCount);
+          finishContainer.addChild(powerup);
 
-          self.$store.state.init(this.levelIndex);
+          title.update(self.levelIndex);
+          stem.update(self.stem);
+          selector.init(self.levelIndex, self.optionCount);
+          title.createTicker();
 
           dragEvent.on(END_DRAG, (e) => {
             //放到指定的框中
             let i = matter.getWhichRectangle(e.x, e.y);
-            self.$store.commit('moveAnswerTo', {index: i, value: e.boxIndex, mouseX: e.x, mouseY: e.y});
+            store.commit('moveAnswerTo', {index: i, value: e.boxIndex, mouseX: e.x, mouseY: e.y});
           });
 
-          levelEvent.on(SUBMIT, () => {
-            let result = self.$store.state.check();
-            if (result) {
-
-            }
+          //点击重置按钮
+          levelEvent.on(RESET, () => {
+            state.init(self.levelIndex);
           });
+
+          //关卡时间到
+          levelEvent.on(TIME_OVER, () => {
+            levelEvent.emit(LEVEL_PASS);
+          });
+
+          //触发通关
           levelEvent.on(LEVEL_PASS, () => {
-            let store=self.$store;
-            let state = store.state;
-            state.record(state.check())
-            state.init(self.levelIndex + 1);
+            let isSuccess = state.check();
+            store.dispatch('record', isSuccess);
+            title.destroyTicker();
+            stem.visible = false;
+            //通过全部关卡
+            if (this.isLastLevel) {
+              hero.fast();
+              train.gotoHead()
+                .then(() => {
+                  hero.stay();
+                  passContainer.addChild(pass);
+                  pass.success();
+                  pass.showResult(self.rightNum, self.totalLevel)
+                });
+            }
+            //通过一个关卡
+            else {
+              state.init(self.levelIndex + 1);
+              train.gotoTrain(self.levelIndex)
+                .then(() => {
+                  stem.visible = true;
+                  stem.update(self.stem);
+                  title.update(self.levelIndex)
+                  hero.slow();
+                  title.createTicker();
+                });
+              hero.fast();
+              selector.init(self.levelIndex, self.optionCount)
+            }
             matter.removeAllBox();
-            selector.init(self.levelIndex,self.optionCount)
-          })
 
+            if (isSuccess) {
+              powerup.success();
+            } else {
+              powerup.falit();
+            }
+          })
         })
     }
   }

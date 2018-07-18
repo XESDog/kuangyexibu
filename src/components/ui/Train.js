@@ -32,18 +32,20 @@ export default class Train extends Container {
       train.x = this.trainStartX + this.trainWidth * i;
       this.addChild(train);
       this.trains.push(train);
-
     }
-
-    this.gotoTrain(this.trains.length - 2, 5)
-
+    this.trains.reverse();
   }
 
-  gotoTrain(index, duration) {
+  gotoTrain(index, duration = 2) {
     return new Promise(resolve => {
       TweenLite.to(this, duration, {x: -this.trains[index].x, onComplete: resolve});
     })
 
+  }
+  gotoHead(duration=2){
+    return new Promise(resolve => {
+      TweenLite.to(this, duration, {x: -500, onComplete: resolve});
+    })
   }
 
 }

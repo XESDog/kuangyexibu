@@ -1,7 +1,7 @@
 import {Container, Rectangle} from 'pixi.js'
 import {DragManager} from "../manager/DragManager";
 import DragBoxEvent from "../type/DragBoxEvent";
-import {dragEvent, END_DRAG, storeEvent, USER_ANSWERS} from "../Event";
+import {dragEvent, END_DRAG, levelEvent, RESET, storeEvent, USER_ANSWERS} from "../Event";
 
 
 //worker不能传输显示对象，因此，需要在这里建立boxIndex和显示对象的对应关系
@@ -55,6 +55,7 @@ export default class MatterWorld extends Container {
 
 //侦听userAnswers的变化
     storeEvent.on(USER_ANSWERS, this.update, this);
+    levelEvent.on(RESET, this.removeAllBox, this);
 
     this.worker.onmessage = (e) => {
       if (e.data.type === 'tick') {

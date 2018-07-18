@@ -27,7 +27,7 @@ export default class Stem extends Container {
     this.txt3.y = 250;
   }
 
-  initLevel(stem) {
+  update(stem) {
     var stems = stem.split(',');
     this.txt1.text = stems[0];
     this.txt2.text = stems[1];

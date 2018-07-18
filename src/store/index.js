@@ -1,13 +1,11 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-let data = require('../assets/data');
-
 Vue.use(Vuex);
 const state = {
-  levelInfo: data,
+  levelInfo: null,
   levelIndex: 0,
-  totalLevel: data.questions.length,
+  totalLevel: null,
   /**
    * 用户答题信息
    * 0,1,2为3个框中箱子信息
@@ -19,10 +17,19 @@ const state = {
   isRight: [],//用户对错情况
   mouseX: 0,
   mouseY: 0,
-  init(level) {
+  /**
+   * data 仅在第一次赋值一次
+   * @param level
+   * @param data
+   */
+  init(level, data = null) {
+    if (data) {
+      this.levelInfo = data;
+      this.totalLevel = data.questions.length;
+    }
     if (level >= this.totalLevel) throw new Error(`总计${this.totalLevel}关，level值${level}超过范围`);
     this.levelIndex = level;
-    this.answers = data.questions[this.levelIndex].answers.concat();
+    this.answers = this.levelInfo.questions[this.levelIndex].answers.concat();
     let total = this.levelInfo.questions[this.levelIndex].optionCount;
     let temp = [];
     for (let i = 0; i < total; i++) {
@@ -30,7 +37,10 @@ const state = {
     }
     this.userAnswers = [[], [], [], temp];
     this.lastUserAnswers = [[], [], [], temp];
-    this.isRight = [];
+    // this.isRight = [];
+  },
+  get totalTime(){
+    return this.levelInfo.totalTime
   },
   /**
    * 检测用户答案是否正确
@@ -44,18 +54,32 @@ const state = {
       return JSON.stringify(value.sort()) === JSON.stringify(userAnswers[index].sort());
     })
   },
-  record(value){
-    this.isRight.push(value);
-  }
 };
-const actions = {};
+const actions = {
+  record: ({state, commit}, value) => {
+    commit('addToIsRight', value)
+  },
+};
 const getters = {
   optionCount: state => {
     return state.levelInfo.questions[state.levelIndex].optionCount;
   },
 
+  rightNum: state => {
+    let count = 0;
+    state.isRight.forEach(value => {
+      if (value) count++;
+    });
+    return count;
+  },
+  stem:state=>{
+    return state.levelInfo.questions[state.levelIndex].stem;
+  }
 };
 const mutations = {
+  addToIsRight(state, value) {
+    state.isRight.push(value)
+  },
   moveAnswerTo(state, {index, value, mouseX, mouseY}/*index:0,1,2代表火车中的框,3代表selector*/) {
 
     state.lastUserAnswers = JSON.parse(JSON.stringify(state.userAnswers));

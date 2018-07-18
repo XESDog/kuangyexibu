@@ -2,8 +2,8 @@ import {Sprite} from 'pixi.js';
 
 const PIXI_SPINE = require('pixi-spine');
 const PATH = './static/animation/$/$.json';
-const data = require('../assets/data.json');
 const resourceData = require('../assets/resource');
+const PIXI = require('pixi.js');
 
 export let res = null;
 

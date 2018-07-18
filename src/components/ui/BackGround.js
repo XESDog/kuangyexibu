@@ -44,4 +44,8 @@ export default class BackGround extends Container {
   _destroyTicker() {
     this._ticker.destroy();
   }
+  destroy(){
+    this._destroyTicker();
+    super.destroy()
+  }
 }
