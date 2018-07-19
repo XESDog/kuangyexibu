@@ -5,7 +5,8 @@ import DragBoxEvent from "../type/DragBoxEvent";
 import {createSprite} from "../resource";
 import * as RES from "../RES";
 import {DragManager} from "../manager/DragManager";
-import {dragEvent, END_DRAG, LEVEL_PASS, levelEvent, RESET, storeEvent, SUBMIT, USER_ANSWERS} from "../Event";
+import {dragEvent, END_DRAG, LEVEL_PASS, levelEvent, RESET, storeEvent, USER_ANSWERS} from "../Event";
+import {TweenLite} from 'gsap';
 
 export default class Selector extends Container {
 
@@ -60,12 +61,12 @@ export default class Selector extends Container {
     this.boxs = [];
   }
 
-  init(levelIndex, optionCount) {
+  init() {
     this._clearBox();
 
     this.currentIndex = 0;//当前指针位置
-    this.levelIndex = levelIndex;//关卡
-    this.optionCount = optionCount;//选项总数
+    this.levelIndex = this.state.levelIndex;//关卡
+    this.optionCount = this.state.optionCount;//选项总数
     this.liftUpIndex = -1;//当前抬起
     this.boxs = [];//所有box显示对象，一次创建
     this.queue = [];//队列
@@ -112,13 +113,41 @@ export default class Selector extends Container {
 
     this._clearBox();
 
+    const offsetX = 130;
+    const spaceX = 250
+    const duration = 0.5;
+
+    let lastQueue = this.state.lastUserAnswers[3];
     let queue = this.state.userAnswers[3];
+
     let len = queue.length >= 4 ? 4 : queue.length;
     for (let i = 0; i < len; i++) {
-      let index = queue[i];
-      let box = this._createBox(index);
-      box.x = 130 + 250 * i;
-      this.boxContainer.addChild(box)
+      // let index = queue[i];
+      // let box = this._createBox(index);
+      // box.x = offsetX + spaceX * i;
+      // this.boxContainer.addChild(box)
+
+      let value = queue[i];
+      let lastIndex = lastQueue.indexOf(value);
+      let box = this._createBox(value);
+      ;
+      //添加新的box
+      if (lastIndex === -1) {
+        box.x = offsetX + spaceX * i;
+        box.alpha = 0;
+        TweenLite.to(box, duration, {alpha: 1});
+      }
+      //
+      else {
+        //位置变化
+        if (i !== lastIndex) {
+          box.x = offsetX + spaceX * lastIndex;
+          TweenLite.to(box, duration, {x: offsetX + spaceX * i});
+        } else {
+          box.x = offsetX + spaceX * lastIndex;
+        }
+      }
+      this.boxContainer.addChild(box);
     }
   }
 }

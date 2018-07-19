@@ -5,9 +5,9 @@ export const GAME_START = Symbol();
 
 export const levelEvent = new EventEmitter();
 export const LEVEL_PASS=Symbol();
-export const SUBMIT = Symbol();
 export const RESET = Symbol();
 export const TIME_OVER = Symbol();
+export const REPLAY=Symbol();
 
 
 export const dragEvent = new EventEmitter();

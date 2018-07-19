@@ -47,5 +47,19 @@ export default class Train extends Container {
       TweenLite.to(this, duration, {x: -500, onComplete: resolve});
     })
   }
+  stop(){
+    this.head.state.setAnimation(0, 'train_top').loop = false;
+    this.girl.state.setAnimation(0, 'train_lily').loop = false;
+    this.trains.forEach(value=>{
+      value.state.setAnimation(0,'train_normal').loop=false;
+    })
+  }
+  play(){
+    this.head.state.setAnimation(0, 'train_top').loop = true;
+    this.girl.state.setAnimation(0, 'train_lily').loop = true;
+    this.trains.forEach(value=>{
+      value.state.setAnimation(0,'train_normal').loop=true;
+    })
+  }
 
 }

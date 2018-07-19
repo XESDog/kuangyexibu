@@ -39,8 +39,11 @@ const state = {
     this.lastUserAnswers = [[], [], [], temp];
     // this.isRight = [];
   },
-  get totalTime(){
-    return this.levelInfo.totalTime
+  get totalTime() {
+    return this.levelInfo.totalTime;
+  },
+  get optionCount() {
+    return this.levelInfo.questions[this.levelIndex].optionCount;
   },
   /**
    * 检测用户答案是否正确
@@ -61,9 +64,6 @@ const actions = {
   },
 };
 const getters = {
-  optionCount: state => {
-    return state.levelInfo.questions[state.levelIndex].optionCount;
-  },
 
   rightNum: state => {
     let count = 0;
@@ -72,7 +72,7 @@ const getters = {
     });
     return count;
   },
-  stem:state=>{
+  stem: state => {
     return state.levelInfo.questions[state.levelIndex].stem;
   }
 };

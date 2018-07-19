@@ -6,11 +6,13 @@ import {
   ENDSCREEN_ENDSCREEN1_JPG,
   ENDSCREEN_ENDSCREEN2_JPG
 } from "../RES";
+import {levelEvent, REPLAY} from "../Event";
 
 
 export default class Pass extends Container {
-  constructor() {
+  constructor(state) {
     super();
+    this.state=state;
     this.btn = new Button(ENDSCREEN_END_NORMAL_PNG,
       ENDSCREEN_END_SELECT_PNG);
     this.bg = new Sprite();
@@ -23,7 +25,8 @@ export default class Pass extends Container {
       fill: 0xb52535
     });
     this.btn.on('pointerdown', () => {
-      window.location.reload();
+      // window.location.replace(this.state.href);
+      levelEvent.emit(REPLAY);
     });
 
 

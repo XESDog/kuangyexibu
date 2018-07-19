@@ -1,6 +1,5 @@
 import {Container, Graphics, Sprite, Text, TextStyle} from 'pixi.js';
-import {TimelineMax, TweenLite} from 'gsap';
-import {levelEvent, TIME_OVER} from "../Event";
+import {LEVEL_PASS, levelEvent, TIME_OVER} from "../Event";
 import {TITLE_PUSHHAND_PNG, TITLE_TIMESIGN_PNG} from "../RES";
 import {getTexture} from "../resource";
 
@@ -19,6 +18,7 @@ export default class Title extends Container {
    */
   constructor(state) {
     super();
+    this.state = state;
     this.totalLevel = state.totalLevel;
     this.titleContainer = new Container();
     this.title = new Sprite();
@@ -43,7 +43,7 @@ export default class Title extends Container {
 
     this.tl = null;
     this.isTween = false;
-    this.titleContainer.y = -500;
+    // this.titleContainer.y = -500;
 
     this._ticker = null;
 
@@ -54,10 +54,14 @@ export default class Title extends Container {
     this.titleContainer.addChild(this.title);
 
     this.pushhand.on('click', () => {
-      this.showTitle();
+      // this._showTitle();
     });
 
     this._createDot();
+
+    levelEvent.on(LEVEL_PASS, () => {
+      this.timeTxt.text = this._getTime(this._totalTime);
+    }, this)
 
   }
 
@@ -88,6 +92,7 @@ export default class Title extends Container {
   destroyTicker() {
     this._ticker.stop();
   }
+
   _refreshTimeTxt() {
     this.timeTxt.text = this._getTime(this._remaindTime);
   }
@@ -103,32 +108,31 @@ export default class Title extends Container {
 
   /**
    * 显示关卡题目
-   * @param levelIndex
    */
-  update(levelIndex) {
-    this.title.texture = getTexture(`title_title_${levelIndex + 1}_png`);
-    this.showTitle();
+  update() {
+    this.title.texture = getTexture(`title_title_${this.state.levelIndex + 1}_png`);
+    this.state.isRight.forEach((value, index) => {
+      this._changeDotState(index, value ? 1 : 2);
+    })
   }
 
-  showTitle() {
-    if (!this.isTween) {
-      this.isTween = true;
-      this.tl = new TimelineMax();
-      this.tl.add(TweenLite.to(this.titleContainer, 1, {y: 0}));
-      this.tl.add(TweenLite.to(this.titleContainer, 1, {
-        y: -500, delay: 3, onComplete: () => {
-          this.isTween = false;
-        }
-      }));
+  resetDot() {
+
+    let total = this.totalLevel;
+    for (let i = 0; i < total; i++) {
+      this._changeDotState(i, 0)
     }
   }
 
   _createDot() {
-    let total = this.totalLevel
+    let total = this.totalLevel;
+    const offsetX = 400;
+    const spaceX = 70;
+    const offsetY = 170;
     for (let i = 0; i < total; i++) {
       let dot = new Dot(i + 1);
-      dot.x = 400 + 70 * i;
-      dot.y = 170;
+      dot.x = offsetX + spaceX * i;
+      dot.y = offsetY;
       dot.name = 'dot' + i;
       this.titleContainer.addChild(dot);
     }
