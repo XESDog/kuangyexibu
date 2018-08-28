@@ -14,7 +14,7 @@
   import MatterWorld from "./matter/MatterWorld";
   import {load} from './resource.js'
   import {
-    appEvent,
+    appEvent, CLOSE,
     dragEvent,
     END_DRAG,
     GAME_START,
@@ -62,6 +62,9 @@
       },
     },
     watch: {
+      /**
+       * 侦测userAnswers变化，抛出box的from...to信息
+       */
       userAnswers: function () {
         let result = [];
         let from, to;
@@ -175,16 +178,23 @@
 
       stage.interactive = true;
 
-
+      /**
+       * 加载配置文件
+       */
       import(/*webpackChunkName:data*/'../../static/data.json')
         .then(value => {
           config = value;
         })
+        /**
+         * 加载资源
+         */
         .then(() => {
           return load();
         })
+        /**
+         * 开始页面
+         */
         .then(() => {
-
           RES = require('./RES');
           BackGround = require('./ui/BackGround').default;
           Selector = require('./ui/Selector').default;
@@ -369,6 +379,10 @@
             state.init(0);
 
           });
+          levelEvent.on(CLOSE,()=>{
+            console.log('close');
+
+          })
 
           //触发通关
           levelEvent.on(LEVEL_PASS, () => {
@@ -434,7 +448,7 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
   div {
-    width: 19.2rem;
+    width: 19.2rem;mai
     height: 10.8rem;
   }
 

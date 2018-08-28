@@ -6,6 +6,7 @@ export const ANIMATION_TRAIN_PNG= getTexture("animation_train_png");
 export const ANIMATION_TRAIN2_PNG= getTexture("animation_train2_png");
 export const BACKGROUND_PNG= getTexture("background_png");
 export const BOX_PNG= getTexture("box_png");
+export const CLOSE_PNG= getTexture("close_png");
 export const ENDSCREEN_END_NORMAL_PNG= getTexture("endscreen_end_normal_png");
 export const ENDSCREEN_END_SELECT_PNG= getTexture("endscreen_end_select_png");
 export const ENDSCREEN_ENDSCREEN1_JPG= getTexture("endscreen_endscreen1_jpg");

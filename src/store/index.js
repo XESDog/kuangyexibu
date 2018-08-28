@@ -59,12 +59,23 @@ const state = {
   },
 };
 const actions = {
+  /**
+   * 记录用户答题情况
+   * @param state
+   * @param commit
+   * @param value
+   */
   record: ({state, commit}, value) => {
     commit('addToIsRight', value)
   },
 };
 const getters = {
 
+  /**
+   * 用户答对的个数
+   * @param state
+   * @return {number}
+   */
   rightNum: state => {
     let count = 0;
     state.isRight.forEach(value => {
@@ -78,6 +89,7 @@ const getters = {
 };
 const mutations = {
   addToIsRight(state, value) {
+    if (state.isRight.length >= state.totalLevel) return;
     state.isRight.push(value)
   },
   moveAnswerTo(state, {index, value, mouseX, mouseY}/*index:0,1,2代表火车中的框,3代表selector*/) {

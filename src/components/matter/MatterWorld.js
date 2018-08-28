@@ -78,12 +78,12 @@ export default class MatterWorld extends Container {
             }
 
             //超出世界范围，需要销毁
-            if (body.position.y > 3000) {
+            /*if (body.position.y > 3000) {
               this.removeBox(userInfo.id);
               let b = removeBodySprite(userInfo.id);
               DragManager.instance.unregister(b);
               b.destroy();
-            }
+            }*/
           }
         });
         this.spriteContainer.children.sort((a, b) => {

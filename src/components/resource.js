@@ -1,6 +1,7 @@
 import {Sprite} from 'pixi.js';
 
 const PIXI_SPINE = require('pixi-spine');
+const PIXI_SOUND=require('pixi-sound')
 const PATH = './static/animation/$/$.json';
 const resourceData = require('../assets/resource');
 const PIXI = require('pixi.js');
@@ -29,7 +30,7 @@ export function getAnimation(animationStr) {
 }
 
 export function getSound(resourceStr) {
-  return res[resourceStr].data;
+  return res[resourceStr].sound;
 }
 
 export function createSprite(texture) {

@@ -9,7 +9,7 @@ export default class BackGround extends Container {
     this.pool = [createSprite(BACKGROUND_PNG), createSprite(BACKGROUND_PNG)];
     this.speed = 10;
     this.viewPortWidth = 1920;
-    this.textureWidth = this.pool[0].width;
+    this.textureWidth = this.pool[0].width-2;//这里减了2像素，不然会有一点缝隙
     this.addChild(this.pool[0]);
     this.addChild(this.pool[1]);
     this.pool[0].x = -this.textureWidth - 100;

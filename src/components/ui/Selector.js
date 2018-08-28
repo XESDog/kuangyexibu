@@ -122,10 +122,6 @@ export default class Selector extends Container {
 
     let len = queue.length >= 4 ? 4 : queue.length;
     for (let i = 0; i < len; i++) {
-      // let index = queue[i];
-      // let box = this._createBox(index);
-      // box.x = offsetX + spaceX * i;
-      // this.boxContainer.addChild(box)
 
       let value = queue[i];
       let lastIndex = lastQueue.indexOf(value);

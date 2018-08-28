@@ -2,6 +2,7 @@ import {Container, Graphics, Sprite, Text, TextStyle} from 'pixi.js';
 import {LEVEL_PASS, levelEvent, TIME_OVER} from "../Event";
 import {TITLE_PUSHHAND_PNG, TITLE_TIMESIGN_PNG} from "../RES";
 import {getTexture} from "../resource";
+import {TimelineLite} from 'gsap';
 
 export default class Title extends Container {
   static TimeTextStyle = new TextStyle(
@@ -11,6 +12,8 @@ export default class Title extends Container {
       align: 'center'
     }
   );
+
+  _tl = null;
 
   /**
    *
@@ -23,6 +26,7 @@ export default class Title extends Container {
     this.titleContainer = new Container();
     this.title = new Sprite();
     this.title.x = 100;
+    this.title.y = -225;
 
     this.pushhand = new Sprite(TITLE_PUSHHAND_PNG);
     this.pushhand.interactive = true;
@@ -41,10 +45,6 @@ export default class Title extends Container {
     this.timeTxt.y = 40;
     this.timeTxt.text = "00:00";
 
-    this.tl = null;
-    this.isTween = false;
-    // this.titleContainer.y = -500;
-
     this._ticker = null;
 
     this.addChild(this.pushhand);
@@ -54,14 +54,33 @@ export default class Title extends Container {
     this.titleContainer.addChild(this.title);
 
     this.pushhand.on('click', () => {
-      // this._showTitle();
+      this._showTitle();
     });
 
     this._createDot();
 
     levelEvent.on(LEVEL_PASS, () => {
       this.timeTxt.text = this._getTime(this._totalTime);
-    }, this)
+      if (this._tl) this._tl.kill();
+      this._tl = new TimelineLite();
+      this._tl.to(this.title, 1, {y: -225})
+        .to(this.title, 2, {})
+        .to(this.title, 1, {
+          y: 0
+        })
+        .to(this.title, 5, {})
+        .to(this.title, 1, {y: -255});
+
+    }, this);
+
+    this._tl = new TimelineLite();
+    this._tl
+      .to(this.title, 2, {})
+      .to(this.title, 1, {
+        y: 0
+      })
+      .to(this.title, 5, {})
+      .to(this.title, 1, {y: -255});
 
   }
 
@@ -126,21 +145,34 @@ export default class Title extends Container {
 
   _createDot() {
     let total = this.totalLevel;
-    const offsetX = 400;
+    const offsetX = (1192 - (total - 1) * 70) >> 1;
     const spaceX = 70;
     const offsetY = 170;
+
     for (let i = 0; i < total; i++) {
       let dot = new Dot(i + 1);
       dot.x = offsetX + spaceX * i;
       dot.y = offsetY;
       dot.name = 'dot' + i;
-      this.titleContainer.addChild(dot);
+      this.title.addChild(dot);
     }
   }
 
   _changeDotState(index, state) {
-    let dot = this.titleContainer.getChildByName('dot' + index);
+    let dot = this.title.getChildByName('dot' + index);
     dot.changeState(state);
+  }
+
+  _showTitle() {
+    this.title.y = -225;
+    this.title.visible = true;
+    if (this._tl) this._tl.kill();
+    this._tl = new TimelineLite();
+    this._tl.to(this.title, 1, {
+      y: 0
+    })
+      .to(this.title, 5, {})
+      .to(this.title, 1, {y: -255});
   }
 }
 
